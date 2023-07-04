@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+
+
+# Custom, program name, .vscode and build incase of object file
+ircserv 
+.vscode
+build

@@ -1,0 +1,5 @@
+server:bitchX
+
+
+//this config file will eventually contain what we want
+to parse in order to propegate information on the irc server
