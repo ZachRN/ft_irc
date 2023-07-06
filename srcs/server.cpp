@@ -1,9 +1,10 @@
+#include <iostream>
 #include "server.hpp"
 
 Server::Server(std::string setpass, int setport)
 {
-	pass = setpass;
-	port = setport;
+	_pass = setpass;
+	_port = setport;
 }
 
 Server::~Server()
@@ -13,15 +14,15 @@ Server::~Server()
 
 std::string	Server::get_name() const
 {
-	return (name);
+	return (_name);
 }
 
 std::string	Server::get_pass() const
 {
-	return (pass);
+	return (_pass);
 }
 
 int	Server::get_port() const
 {
-	return (port);
+	return (_port);
 }

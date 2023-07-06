@@ -1,7 +1,8 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-#include "iostream"
+# include <iostream>
+# include <string>
 /*
 	Private Variables are pending to be added
 	as we see fit, possibly things such as timeout response
@@ -10,9 +11,9 @@
 class Server
 {
 	private:
-		std::string name;
-		std::string pass;
-		int			port;
+		std::string _name;
+		std::string _pass;
+		int			_port;
 	public:
 		Server(std::string pass, int port);
 		~Server();
