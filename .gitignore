@@ -36,3 +36,6 @@
 ircserv 
 .vscode
 build
+
+# Ignore LimeChat
+/LimeChat_2.40
