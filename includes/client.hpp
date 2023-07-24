@@ -3,7 +3,13 @@
 
 # include <iostream>
 # include <string>
-# include "server.hpp"
+
+enum ClientErrors{
+	NO_CLIENT_FOUND = 1,
+	NAME_ALREADY_INUSE,
+	NAME_SYNTAX_INVALID
+};
+
 /*
 	1.2 Clients
 
@@ -21,21 +27,27 @@ class Client
 {
 	private:
 		std::string	_nickname;
-		std::string	_realname;
+		//Also commenting out _realname for now, as it is not required by the subject
+		// std::string	_realname;
 		std::string	_username;
-		Server		*_server;
+		//Commenting out *_server being mandatory as the server will contain
+		//The client, to add a _channelList later.
+		// Server		*_server;
 	public:
-		Client(std::string nickname, std::string realname, std::string username, Server *server);
+		Client(std::string nickname, std::string username);
+		// Client(std::string nickname, std::string realname, std::string username, Server *server);
 		Client(const Client &copy);
 		~Client();
 		Client	&operator=(const Client &copy);
 		
 		std::string	get_nickname() const;
-		std::string	get_realname() const;
+		// std::string	get_realname() const;
 		std::string	get_username() const;
-		Server		*get_server() const;
+		int			set_username(std::string username);
+		// Server		*get_server() const;
 
-		bool		set_nickname(std::string nickname);
+		//Can't reset nickname after setting. Change to username
+		// bool		set_nickname(std::string nickname);
 };
 
 #endif
