@@ -3,16 +3,18 @@
 #include "utils.hpp"
 
 //See Notes in Client.hpp for more information on commented out info.
-
-
-Client::Client(std::string nickname, std::string username)
+Client::Client(int fd)
 {
-	//!!NEED TO CHECK BOTH USERNAME AND NICKNAME, IF EITHER ARE INVALID
-	//WE MIGHT NEED TO THROW DURING CONSTRUCTION; WHICH IS AN ISSUE, OR WE HAVE A
-	//"ZOMBIE" STYLE STATE AS A WORKAROUND, SINCE CONSTRUCTORS CANT RETURN.
-	_nickname = nickname;
-	_username = username;
+	_fd = fd;
 }
+// Client::Client(std::string nickname, std::string username)
+// {
+// 	//!!NEED TO CHECK BOTH USERNAME AND NICKNAME, IF EITHER ARE INVALID
+// 	//WE MIGHT NEED TO THROW DURING CONSTRUCTION; WHICH IS AN ISSUE, OR WE HAVE A
+// 	//"ZOMBIE" STYLE STATE AS A WORKAROUND, SINCE CONSTRUCTORS CANT RETURN.
+// 	_nickname = nickname;
+// 	_username = username;
+// }
 
 // Client::Client(std::string nickname, std::string realname, std::string username, Server *server)
 // {
