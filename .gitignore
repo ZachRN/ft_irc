@@ -31,8 +31,11 @@
 *.out
 *.app
 
-
-# Custom, program name, .vscode and build incase of object file
+# Custom, program name, .vscode, .DS_store and build incase of object file
 ircserv 
 .vscode
+.DS_store
 build
+
+# Ignore LimeChat
+/LimeChat_2.40
