@@ -84,6 +84,7 @@ int main() {
 				if (bytesRead > 0) {
 					buffer[bytesRead] = '\0';
 					std::cout << "Received from client " << *it << ": " << buffer << std::endl;
+					send(*it, "Acknowledged!\n", 14, 0);
 				} else if (bytesRead == 0) {
 					std::cout << "Client " << *it << " disconnected." << std::endl;
 					close(*it);

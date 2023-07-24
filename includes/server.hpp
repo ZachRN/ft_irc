@@ -4,6 +4,7 @@
 # include <iostream>
 # include <string>
 # include <map>
+# include <netinet/in.h>
 # include "client.hpp"
 
 # define SUCCESS 0
@@ -22,6 +23,8 @@ class Server
 		std::string _pass;
 		int			_port;
 		std::map<std::string, Client> _clientList;
+		int			_socket;
+		struct sockaddr_in	_serverAddr;
 	public:
 		//Initilization
 		Server(std::string pass, int port);
@@ -45,6 +48,10 @@ class Server
 		int	add_client(std::string nickname, std::string username);
 		int	remove_client(std::string nickname);
 
+		//Socket Functions
+		int		get_socket() const;
+		int		init_socket();
+		int		close_socket();
 };
 
 #endif
