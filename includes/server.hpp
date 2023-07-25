@@ -14,6 +14,7 @@
 	etc etc.
 */
 class Client;
+class Channel;
 
 class Server
 {
@@ -23,6 +24,7 @@ class Server
 		std::string _pass;
 		int			_port;
 		std::map<int, Client> _clientList;
+		std::map<std::string, Channel> _channelList;
 	public:
 		//Initilization
 		Server(std::string pass, int port);
@@ -37,7 +39,7 @@ class Server
 		
 		//Nickname is for 	some reason what IRC uses as a way
 		//to uniquely define people, thus a nickname == username in modern
-		std::map<int, Client> get_clientList() const;
+		std::map<int, Client>& get_clientList();
 		Client*		get_client(int fd);
 		Client*		get_client(std::string nickname);
 		//Not Sure how we want to handle errors with adding and removing clients
@@ -47,8 +49,14 @@ class Server
 		int	add_client(int fd);
 		int	remove_client(int fd);
 		//This is a wrapper for Client Setnickname to verify 
-		int	client_setnickname(int fd, std::string nickname);
-
+		bool	nickname_in_use(std::string nickname);
+		//End of Client Map Functions
+		
+		//Stat of Channel Map Functions
+		std::map<std::string, Channel>& get_channelList();
+		Channel*	get_channel(std::string channelName);
+		int	add_channel(std::string channelName, Client &client);
+		int	remove_channel(std::string channelName);
 };
 
 #endif

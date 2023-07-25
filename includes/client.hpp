@@ -3,6 +3,7 @@
 
 # include <iostream>
 # include <string>
+# include <vector>
 // # include "server.hpp"
 
 enum ClientErrors{
@@ -26,6 +27,7 @@ enum ClientErrors{
 */
 
 class Server;
+class Channel;
 
 class Client
 {
@@ -36,6 +38,7 @@ class Client
 		//This says if the setup process of their account is complete.
 		bool		_verified;
 		Server		&_server;
+		std::vector<Channel> _channelList;
 	public:
 		Client(int fd, Server &server);
 		// Client(std::string nickname, std::string username);
@@ -43,11 +46,19 @@ class Client
 		~Client();
 		Client	&operator=(const Client &copy);
 		
+		//Primarily Startup
 		int			get_fd() const;
 		std::string	get_nickname() const;
+		int			set_nickname(std::string nickname);
 		std::string	get_username() const;
 		int			set_username(std::string username);
-		int			set_nickname(std::string nickname);
+		Server		get_server() const;
+
+		//User Actions
+		int			join_channel(std::string channelName);
+		int			leave_channel(std::string channelName);
+		std::vector<Channel>* get_channelList(void);
+		Channel*	get_channel(std::string channelName);
 };
 
 #endif

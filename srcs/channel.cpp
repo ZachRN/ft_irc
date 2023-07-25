@@ -1,8 +1,9 @@
 #include "channel.hpp"
 #include "client.hpp"
+#include "server.hpp"
 #include <vector>
 
-Channel::Channel(std::string name, Client *creator)
+Channel::Channel(std::string name, Client &creator)
 {
 	_name = name;
 	_clients.push_back(creator);
@@ -38,58 +39,60 @@ std::string	Channel::get_topic() const
 	return (_topic);
 }
 
-std::vector<Client *>	Channel::get_clients() const
+std::vector<Client>	Channel::get_clients() const
 {
 	return (_clients);
 }
 
-std::vector<Client *>	Channel::get_operators() const
+bool Channel::client_in_channel(std::string nickname) const
 {
-	return (_operators);
-}
-
-bool		Channel::add_client(Client *client)
-{
-	_clients.push_back(client);
-	return (true);
-}
-
-bool		Channel::remove_client(Client *client)
-{
-	std::vector<Client *>::iterator it;
-
-	it = _clients.begin();
-	while (it != _clients.end())
+	for (std::vector<Client>::const_iterator it = _clients.begin(); it != _clients.end(); it++)
 	{
-		if (*it == client)
-		{
-			_clients.erase(it);
+		if (it.base()->get_nickname() == nickname)
 			return (true);
-		}
-		it++;
 	}
 	return (false);
 }
 
-bool		Channel::add_operator(Client *client)
+std::vector<Client>	Channel::get_operators() const
+{
+	return (_operators);
+}
+
+bool		Channel::add_client(Client &client)
+{
+	_clients.push_back(client);
+	return (SUCCESS);
+}
+
+bool		Channel::remove_client(Client &client)
+{
+	for (std::vector<Client>::iterator it = _clients.begin(); it != _clients.end(); it++)
+	{
+		if (it.base()->get_fd() == client.get_fd())
+		{
+			_clients.erase(it);
+			return (true);
+		}
+	}
+	return (false);
+}
+
+bool		Channel::add_operator(Client &client)
 {
 	_operators.push_back(client);
 	return (true);
 }
 
-bool		Channel::remove_operator(Client *client)
+bool		Channel::remove_operator(Client &client)
 {
-	std::vector<Client *>::iterator it;
-
-	it = _operators.begin();
-	while (it != _operators.end())
+	for (std::vector<Client>::iterator it = _operators.begin(); it != _operators.end(); it++)
 	{
-		if (*it == client)
+		if (it.base()->get_fd() == client.get_fd())
 		{
 			_operators.erase(it);
 			return (true);
 		}
-		it++;
 	}
 	return (false);
 }

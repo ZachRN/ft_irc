@@ -1,5 +1,6 @@
 #include "client.hpp"
 #include "server.hpp"
+#include "channel.hpp"
 #include "utils.hpp"
 
 //See Notes in Client.hpp for more information on commented out info.
@@ -10,22 +11,6 @@ _server(server)
 	_nickname = "";
 	_username = "";
 }
-// Client::Client(std::string nickname, std::string username)
-// {
-// 	//!!NEED TO CHECK BOTH USERNAME AND NICKNAME, IF EITHER ARE INVALID
-// 	//WE MIGHT NEED TO THROW DURING CONSTRUCTION; WHICH IS AN ISSUE, OR WE HAVE A
-// 	//"ZOMBIE" STYLE STATE AS A WORKAROUND, SINCE CONSTRUCTORS CANT RETURN.
-// 	_nickname = nickname;
-// 	_username = username;
-// }
-
-// Client::Client(std::string nickname, std::string realname, std::string username, Server *server)
-// {
-// 	_nickname = nickname;
-// 	_realname = realname;
-// 	_username = username;
-// 	_server = server;
-// }
 
 Client::Client(const Client &copy):
 _server(copy._server)
@@ -45,40 +30,30 @@ Client	&Client::operator=(const Client &copy)
 	return (*this);
 }
 
-// Client	&Client::operator=(const Client &copy)
-// {
-// 	_nickname = copy._nickname;
-// 	_realname = copy._realname;
-// 	_username = copy._username;
-// 	_server = copy._server;
-// 	return (*this);
-// }
-
+int	Client::get_fd() const
+{
+	return (_fd);
+}
 std::string	Client::get_nickname() const
 {
 	return (_nickname);
 }
 
-// std::string	Client::get_realname() const
-// {
-// 	return (_realname);
-// }
-
-std::string	Client::get_username() const
-{
-	return (_username);
-}
-
 int	Client::set_nickname(std::string nickname)
 {
-	//Note that set_nickname is wrapped in a set nickname for server which
-	//verifies the nickname is unique
 	if (name_syntax_check(nickname) == false)
 		return (NAME_SYNTAX_INVALID);
+	if (_server.nickname_in_use(nickname) == true)
+		return (NAME_ALREADY_INUSE);
 	_nickname = nickname;
 	if (_username != "")
 		_verified = true;
 	return (SUCCESS);
+}
+
+std::string	Client::get_username() const
+{
+	return (_username);
 }
 
 int	Client::set_username(std::string username)
@@ -91,18 +66,61 @@ int	Client::set_username(std::string username)
 	return (SUCCESS);
 }
 
-// Server		*Client::get_server() const
-// {
-// 	return (_server);
-// }
+Server		Client::get_server() const
+{
+	return (_server);
+}
 
-// bool		Client::set_nickname(std::string nickname)
-// {
-// 	/* 
-// 		Change this to proper nickname validation
-// 	*/
-// 	if (nickname.length() > 9)
-// 		return (false);
-// 	_nickname = nickname;
-// 	return (true);
-// }
+int			Client::join_channel(std::string channelName)
+{
+	std::map<std::string, Channel>& channelList = _server.get_channelList();
+	std::map<std::string, Channel>::iterator channelIt = channelList.find(channelName);
+	if (channelIt == channelList.end())
+	{
+		if (_server.add_channel(channelName, *this) != SUCCESS)
+		{
+			_channelList.pop_back();
+			return (FAILURE);
+		}
+		_channelList.push_back(channelList.find(channelName)->second);
+		return (SUCCESS);
+	}
+	if (get_channel(channelName) != nullptr)
+		return (FAILURE);
+	_channelList.push_back(channelIt->second);
+	if (channelIt->second.add_client(*this) != SUCCESS)
+	{
+		_channelList.pop_back();
+		return (FAILURE);
+	}
+	return (SUCCESS);
+}
+
+int			Client::leave_channel(std::string channelName)
+{
+	std::map<std::string, Channel>& channelList = _server.get_channelList();
+	std::map<std::string, Channel>::iterator channelIt = channelList.find(channelName);
+	if (channelIt == channelList.end())
+		return (NO_CHANNEL_FOUND);
+	if (channelIt->second.client_in_channel(get_nickname()) == true)
+	{
+		channelIt->second.remove_operator(*this);
+		return (channelIt->second.remove_client(*this));
+	}
+	return (FAILURE);
+}
+
+std::vector<Channel>* Client::get_channelList(void)
+{
+	return (&_channelList);
+}
+
+Channel*	Client::get_channel(std::string channelName)
+{
+	for(std::vector<Channel>::iterator channelIt = _channelList.begin(); channelIt != _channelList.end(); channelIt++)
+	{
+		if (channelIt->get_name() == channelName)
+			return (&(*channelIt));
+	}
+	return (nullptr);
+}

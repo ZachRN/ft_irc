@@ -44,30 +44,37 @@
 
 */
 
+enum ChannelErrors
+{
+	CHANNEL_NAME_IN_USE = 1,
+	NO_CHANNEL_FOUND,
+};
+
 class Channel
 {
 	private:
 		std::string				_name;
 		std::string				_topic;
-		std::vector<Client *>	_clients;
-		std::vector<Client *>	_operators;
+		std::vector<Client>	_clients;
+		std::vector<Client>	_operators;
 	public:
-		Channel(std::string name, Client *creator);
+		Channel(std::string name, Client &creator);
 		Channel(const Channel &copy);
 		~Channel();
 		Channel	&operator=(const Channel &copy);
 		
 		std::string				get_name() const;
 		std::string				get_topic() const;
-		std::vector<Client *>	get_clients() const;
-		std::vector<Client *>	get_operators() const;
+		std::vector<Client>		get_clients() const;
+		bool					client_in_channel(std::string nickname) const;
+		std::vector<Client>		get_operators() const;
 
 		void	set_name(std::string name);
 		void	set_topic(std::string topic);
-		bool	add_client(Client *client);
-		bool	remove_client(Client *client);
-		bool	add_operator(Client *client);
-		bool	remove_operator(Client *client);
+		bool	add_client(Client &client);
+		bool	remove_client(Client &client);
+		bool	add_operator(Client &client);
+		bool	remove_operator(Client &client);
 };
 
 #endif

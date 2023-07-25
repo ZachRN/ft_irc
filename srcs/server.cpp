@@ -2,6 +2,7 @@
 #include <utility> // std::make_pair
 #include "server.hpp"
 #include "client.hpp"
+#include "channel.hpp"
 #include "utils.hpp"
 
 //Initilization
@@ -37,7 +38,7 @@ int	Server::get_port() const
 //End of Regular Variable Functions
 
 //Client Map Functions
-std::map<int, Client> Server::get_clientList() const
+std::map<int, Client>& Server::get_clientList()
 {
 	return (_clientList);
 }
@@ -62,6 +63,7 @@ Client* Server::get_client(std::string nickname)
 	return (nullptr);
 }
 
+
 //Current solution is to use enums instead of throwing for explicit error messages
 //this is primarily to save on resources
 int	Server::add_client(int fd)
@@ -83,4 +85,48 @@ int	Server::remove_client(int fd)
 	_clientList.erase(client);
 	return (SUCCESS);
 }
+
+bool	Server::nickname_in_use(std::string nickname)
+{
+	if (get_client(nickname) == nullptr)
+		return (false);
+	return (true);
+}
 //End of Client Map Functions
+
+//Stat of Channel Map Functions
+
+std::map<std::string, Channel>& Server::get_channelList()
+{
+	return (_channelList);
+}
+
+Channel*	Server::get_channel(std::string channelName)
+{
+	std::map<std::string, Channel>::iterator channel = _channelList.find(channelName);
+	if (channel == _channelList.end())
+		return (nullptr);
+	return (&channel->second);
+}
+
+int	Server::add_channel(std::string channelName, Client &client)
+{
+	if (get_channel(channelName) != nullptr)
+		return (CHANNEL_NAME_IN_USE);
+	if (name_syntax_check(channelName) != SUCCESS)
+		return (NAME_SYNTAX_INVALID);
+	Channel channel(channelName, client);
+	_channelList.insert(std::make_pair(channelName, channel));
+	return (SUCCESS);
+}
+
+int	Server::remove_channel(std::string channelName)
+{
+	std::map<std::string, Channel>::iterator channel = _channelList.find(channelName);
+	if (channel == _channelList.end())
+		return (NO_CHANNEL_FOUND);
+	_channelList.erase(channel);
+	return (SUCCESS);
+}
+
+//END OF CHANNEL MAP FUCNTIONS
