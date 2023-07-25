@@ -85,7 +85,7 @@ int			Client::join_channel(std::string channelName)
 		_channelList.push_back(channelList.find(channelName)->second);
 		return (SUCCESS);
 	}
-	if (get_channel(channelName) != nullptr)
+	if (is_in_channel(channelName) == true)
 		return (FAILURE);
 	_channelList.push_back(channelIt->second);
 	if (channelIt->second.add_client(*this) != SUCCESS)
@@ -123,4 +123,14 @@ Channel*	Client::get_channel(std::string channelName)
 			return (&(*channelIt));
 	}
 	return (nullptr);
+}
+
+bool	Client::is_in_channel(std::string channelName) const
+{
+	for(std::vector<Channel>::const_iterator channelIt = _channelList.begin(); channelIt != _channelList.end(); channelIt++)
+	{
+		if (channelIt->get_name() == channelName)
+			return (true);
+	}
+	return (false);
 }

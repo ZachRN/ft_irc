@@ -59,6 +59,7 @@ class Client
 		int			leave_channel(std::string channelName);
 		std::vector<Channel>* get_channelList(void);
 		Channel*	get_channel(std::string channelName);
+		bool		is_in_channel(std::string channelName) const;
 };
 
 #endif
