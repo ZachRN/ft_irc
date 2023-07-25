@@ -3,6 +3,7 @@
 
 # include <iostream>
 # include <string>
+// # include "server.hpp"
 
 enum ClientErrors{
 	FD_IN_USE = 1,
@@ -24,14 +25,19 @@ enum ClientErrors{
 	host, and the server to which the client is connected.
 */
 
+class Server;
+
 class Client
 {
 	private:
 		int			_fd;
 		std::string	_nickname;
 		std::string	_username;
+		//This says if the setup process of their account is complete.
+		bool		_verified;
+		Server		&_server;
 	public:
-		Client(int fd);
+		Client(int fd, Server &server);
 		// Client(std::string nickname, std::string username);
 		Client(const Client &copy);
 		~Client();

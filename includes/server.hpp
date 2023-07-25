@@ -4,7 +4,6 @@
 # include <iostream>
 # include <string>
 # include <map>
-# include "client.hpp"
 
 # define SUCCESS 0
 # define FAILURE 1
@@ -14,6 +13,8 @@
 	as we see fit, possibly things such as timeout response
 	etc etc.
 */
+class Client;
+
 class Server
 {
 	private:
@@ -38,12 +39,15 @@ class Server
 		//to uniquely define people, thus a nickname == username in modern
 		std::map<int, Client> get_clientList() const;
 		Client*		get_client(int fd);
+		Client*		get_client(std::string nickname);
 		//Not Sure how we want to handle errors with adding and removing clients
 		//Do we want to throw? Right now it is early return, maybe change function to
 		//A bool and return true or false depending on pass/fail.
 		//Throwing allows more custom errors, not sure if needed. 
-		int	add_client(int fd, std::string nickname, std::string username);
+		int	add_client(int fd);
 		int	remove_client(int fd);
+		//This is a wrapper for Client Setnickname to verify 
+		int	client_setnickname(int fd, std::string nickname);
 
 };
 

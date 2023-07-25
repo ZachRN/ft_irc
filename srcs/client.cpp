@@ -3,9 +3,12 @@
 #include "utils.hpp"
 
 //See Notes in Client.hpp for more information on commented out info.
-Client::Client(int fd)
+Client::Client(int fd, Server &server) :
+_server(server)
 {
 	_fd = fd;
+	_nickname = "";
+	_username = "";
 }
 // Client::Client(std::string nickname, std::string username)
 // {
@@ -24,7 +27,8 @@ Client::Client(int fd)
 // 	_server = server;
 // }
 
-Client::Client(const Client &copy)
+Client::Client(const Client &copy):
+_server(copy._server)
 {
 	*this = copy;
 }
@@ -65,11 +69,25 @@ std::string	Client::get_username() const
 	return (_username);
 }
 
+int	Client::set_nickname(std::string nickname)
+{
+	//Note that set_nickname is wrapped in a set nickname for server which
+	//verifies the nickname is unique
+	if (name_syntax_check(nickname) == false)
+		return (NAME_SYNTAX_INVALID);
+	_nickname = nickname;
+	if (_username != "")
+		_verified = true;
+	return (SUCCESS);
+}
+
 int	Client::set_username(std::string username)
 {
 	if (name_syntax_check(username) == false)
 		return (NAME_SYNTAX_INVALID);
 	_username = username;
+	if (_nickname != "")
+		_verified = true;
 	return (SUCCESS);
 }
 

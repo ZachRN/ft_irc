@@ -1,6 +1,7 @@
 #include <iostream>
 #include <utility> // std::make_pair
 #include "server.hpp"
+#include "client.hpp"
 #include "utils.hpp"
 
 //Initilization
@@ -51,15 +52,25 @@ Client*	Server::get_client(int fd)
 	return (&client->second);
 }
 
+Client* Server::get_client(std::string nickname)
+{
+	for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); it++)
+	{
+		if (it->second.get_nickname() == nickname)
+			return (&it->second);
+	}
+	return (nullptr);
+}
+
 //Current solution is to use enums instead of throwing for explicit error messages
 //this is primarily to save on resources
-int	Server::add_client(int fd, std::string nickname, std::string username)
+int	Server::add_client(int fd)
 {
 	if (this->get_client(fd) != nullptr)
 		return (FD_IN_USE);
 	// if (!name_syntax_check(nickname) || !name_syntax_check(username))
 	// 	return (NAME_SYNTAX_INVALID);
-	Client client(fd);
+	Client client(fd, *this);
 	_clientList.insert(std::make_pair(fd, client));
 	return (SUCCESS);
 }

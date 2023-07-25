@@ -14,6 +14,6 @@ int	main(int argc, char *argv[])
 	(void)argv;
 	Server ircServer("testPass", 4242);
 	std::cout << "password: " << ircServer.get_pass() << "\nport: " << ircServer.get_port() << std::endl;
-	ircServer.add_client("zach", "zach");
+	// ircServer.add_client("zach", "zach");
 	run_tests();
 }
