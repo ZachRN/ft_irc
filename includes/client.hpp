@@ -3,9 +3,12 @@
 
 # include <iostream>
 # include <string>
+# include <vector>
+// # include "server.hpp"
 
 enum ClientErrors{
-	NO_CLIENT_FOUND = 1,
+	FD_IN_USE = 1,
+	NO_CLIENT_FOUND,
 	NAME_ALREADY_INUSE,
 	NAME_SYNTAX_INVALID
 };
@@ -23,31 +26,40 @@ enum ClientErrors{
 	host, and the server to which the client is connected.
 */
 
+class Server;
+class Channel;
+
 class Client
 {
 	private:
+		int			_fd;
 		std::string	_nickname;
-		//Also commenting out _realname for now, as it is not required by the subject
-		// std::string	_realname;
 		std::string	_username;
-		//Commenting out *_server being mandatory as the server will contain
-		//The client, to add a _channelList later.
-		// Server		*_server;
+		//This says if the setup process of their account is complete.
+		bool		_verified;
+		Server		&_server;
+		std::vector<Channel> _channelList;
 	public:
-		Client(std::string nickname, std::string username);
-		// Client(std::string nickname, std::string realname, std::string username, Server *server);
+		Client(int fd, Server &server);
+		// Client(std::string nickname, std::string username);
 		Client(const Client &copy);
 		~Client();
 		Client	&operator=(const Client &copy);
 		
+		//Primarily Startup
+		int			get_fd() const;
 		std::string	get_nickname() const;
-		// std::string	get_realname() const;
+		int			set_nickname(std::string nickname);
 		std::string	get_username() const;
 		int			set_username(std::string username);
-		// Server		*get_server() const;
+		Server		get_server() const;
 
-		//Can't reset nickname after setting. Change to username
-		// bool		set_nickname(std::string nickname);
+		//User Actions
+		int			join_channel(std::string channelName);
+		int			leave_channel(std::string channelName);
+		std::vector<Channel>* get_channelList(void);
+		Channel*	get_channel(std::string channelName);
+		bool		is_in_channel(std::string channelName) const;
 };
 
 #endif
