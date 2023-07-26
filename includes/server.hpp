@@ -23,6 +23,7 @@ class Server
 		std::string _pass;
 		int			_port;
 		std::map<std::string, Client> _clientList;
+		int			_maxClients;
 		int			_socket;
 		struct sockaddr_in	_serverAddr;
 	public:
@@ -41,6 +42,8 @@ class Server
 		//to uniquely define people, thus a nickname == username in modern
 		std::map<std::string, Client> get_clientList() const;
 		Client*		get_client(std::string nickname);
+		int			get_maxClients() const;
+		void		set_maxClients(int maxClients);
 		//Not Sure how we want to handle errors with adding and removing clients
 		//Do we want to throw? Right now it is early return, maybe change function to
 		//A bool and return true or false depending on pass/fail.

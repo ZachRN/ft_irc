@@ -55,6 +55,16 @@ Client*	Server::get_client(std::string username)
 	return (&client->second);
 }
 
+int	Server::get_maxClients() const
+{
+	return (_maxClients);
+}
+
+void	Server::set_maxClients(int maxClients)
+{
+	_maxClients = maxClients;
+}
+
 //Current solution is to use enums instead of throwing for explicit error messages
 //this is primarily to save on resources
 int	Server::add_client(std::string nickname, std::string username)

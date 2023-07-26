@@ -1,4 +1,5 @@
 #include <iostream>
+#include "run_server.hpp"
 #include "server.hpp"
 
 //Hard defining instead of making a .h
@@ -13,7 +14,9 @@ int	main(int argc, char *argv[])
 	}
 	(void)argv;
 	Server ircServer("testPass", 4242);
+	ircServer.set_maxClients(4096);
 	std::cout << "password: " << ircServer.get_pass() << "\nport: " << ircServer.get_port() << std::endl;
 	ircServer.add_client("zach", "zach");
-	run_tests();
+	run_server(ircServer);
+	//run_tests();
 }

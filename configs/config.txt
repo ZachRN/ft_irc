@@ -1,5 +1,5 @@
 server:bitchX
-
+max_clients = 4096
 
 //this config file will eventually contain what we want
 to parse in order to propegate information on the irc server
