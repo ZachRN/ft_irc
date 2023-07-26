@@ -6,6 +6,7 @@
 # include <map>
 # include <netinet/in.h>
 # include "client.hpp"
+# include "channel.hpp"
 
 # define SUCCESS 0
 # define FAILURE 1
@@ -15,8 +16,8 @@
 	as we see fit, possibly things such as timeout response
 	etc etc.
 */
-class Client;
-class Channel;
+// class Client;
+// class Channel;
 
 class Server
 {

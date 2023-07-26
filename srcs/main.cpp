@@ -10,14 +10,13 @@ int	main(int argc, char *argv[])
 {
 	if (argc != 3)
 	{
-		std::cout << "Arguements should be as follows\n./ircserv [password] [port]" << std::endl;
+		std::cout << "Arguments should be as follows\n./ircserv [password] [port]" << std::endl;
 		return (1);
 	}
 	(void)argv;
 	Server ircServer("testPass", 4242);
-	ircServer.set_maxClients(4096);
+	ircServer.set_maxClients(5);
 	std::cout << "password: " << ircServer.get_pass() << "\nport: " << ircServer.get_port() << std::endl;
-	ircServer.add_client("zach", "zach");
 	run_server(ircServer);
 	//run_tests();
 }
