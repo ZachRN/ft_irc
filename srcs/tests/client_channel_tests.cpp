@@ -241,7 +241,80 @@ int	remove_user(void)
 	}
 	else
 		std::cout << "SUCCESS: Server clientList correctly updated with multiple clients and singular removal." << std::endl;
-	std::cout << "Able to remove when one client, multiple clients" << std::endl;
+	std::cout << "Able to remove when one client, multiple clients\n----------------" << std::endl;
+	return (SUCCESS);
+}
+
+int		leave_channel_tests(void)
+{//SETUP
+	std::cout << "Removing Client from Server test" << std::endl;
+	Server ircServ("pass", 123);
+	ircServ.add_client(4);
+	ircServ.add_client(5);
+	ircServ.add_client(6);
+	ircServ.add_client(7);
+	Client *zach = ircServ.get_client(4);
+	Client *mike = ircServ.get_client(5);
+	Client *frans = ircServ.get_client(6);
+	Client *patrick = ircServ.get_client(7);
+	zach->set_nickname("Zach");
+	mike->set_nickname("Mike");
+	frans->set_nickname("Frans");
+	patrick->set_nickname("Patrick");
+
+
+	zach->join_channel("Zachs_Home");
+	// zach->set_nickname("Zach");
+	// std::cout << zach->get_nickname() << std::endl;
+	if (zach->leave_channel("Zachs_Home") != SUCCESS)
+	{
+		std::cout << "ERROR:Unable to leave channel that already exists." << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: Able to leave channel that already exists." << std::endl;
+	if (ircServ.get_channel("Zachs_Home") != nullptr)
+	{
+		std::cout << "ERROR:Channel still exists within Server Channel" << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: Channel no longer exists after final person leaves." << std::endl;
+	zach->join_channel("Zachs_Home");
+	mike->join_channel("Zachs_Home");
+	Channel *channel = ircServ.get_channel("Zachs_Home");
+	zach->leave_channel("Zachs_Home");
+	if (channel->client_is_owner(mike->get_nickname()) == false)
+	{
+		std::cout << "ERROR: Failed to make non-operator client owner." << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: Added non-operator client to owner." << std::endl;
+	mike->leave_channel("Zachs_Home");
+	zach->join_channel("Mikes_Home");
+	mike->join_channel("Mikes_Home");
+	frans->join_channel("Mikes_Home");
+	patrick->join_channel("Mikes_Home");
+	channel = ircServ.get_channel("Mikes_Home");
+	channel->add_operator(mike);
+	zach->leave_channel("Mikes_Home");
+	if (channel->client_is_owner(mike->get_nickname()) != true)
+	{
+		std::cout << "ERROR: Failed to make operator owner after owner leaves." << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: Operator took owner role after owner left." << std::endl;
+	mike->leave_channel("Mikes_Home");
+	frans->set_nickname("Frans3");
+	if (channel->client_is_owner(frans->get_nickname()) != true)
+	{
+		std::cout << "ERROR: Failed to make client owner after name change and they were last." << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: Client remained owner after name change and operator left" << std::endl;
 	return (SUCCESS);
 }
 
@@ -259,7 +332,9 @@ void	client_channel_tests(void)
 		return ;
 	if (remove_user() != SUCCESS)
 		return ;
+	if (leave_channel_tests() != SUCCESS)
+		return ;
+	system("leaks -q ircserv");
+	system("lsof -c ircserv");
 	//Leaving Channel, Channel Removal, Passing Ownership.
-	// if (remove_user_from_channel() != SUCCESS)
-		// return ;
 }

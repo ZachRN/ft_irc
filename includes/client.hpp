@@ -37,10 +37,10 @@ class Client
 		std::string	_username;
 		//This says if the setup process of their account is complete.
 		bool		_verified;
-		Server		&_server;
-		std::vector<Channel> _channelList;
+		Server		*_server;
+		std::vector<Channel*> _channelList;
 	public:
-		Client(int fd, Server &server);
+		Client(int fd, Server* server);
 		// Client(std::string nickname, std::string username);
 		Client(const Client &copy);
 		~Client();
@@ -52,12 +52,12 @@ class Client
 		int			set_nickname(std::string nickname);
 		std::string	get_username() const;
 		int			set_username(std::string username);
-		Server		get_server() const;
+		Server*		get_server() const;
 
 		//User Actions
 		int			join_channel(std::string channelName);
 		int			leave_channel(std::string channelName);
-		std::vector<Channel>* get_channelList(void);
+		std::vector<Channel*> get_channelList(void);
 		Channel*	get_channel(std::string channelName);
 		bool		is_in_channel(std::string channelName) const;
 };

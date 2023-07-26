@@ -50,31 +50,39 @@ enum ChannelErrors
 	NO_CHANNEL_FOUND,
 };
 
+class Server;
+
 class Channel
 {
 	private:
 		std::string				_name;
 		std::string				_topic;
-		std::vector<Client>	_clients;
-		std::vector<Client>	_operators;
+		Server*					_server;
+		std::vector<Client*>	_clients;
+		std::vector<Client*>	_operators;
+		Client*				_owner;
 	public:
-		Channel(std::string name, Client &creator);
+		Channel(std::string name, Client* creator, Server *server);
 		Channel(const Channel &copy);
 		~Channel();
 		Channel	&operator=(const Channel &copy);
 		
 		std::string				get_name() const;
 		std::string				get_topic() const;
-		std::vector<Client>		get_clients() const;
+		std::vector<Client*>	get_clients() const;
 		bool					client_in_channel(std::string nickname) const;
-		std::vector<Client>		get_operators() const;
+		std::vector<Client*>	get_operators() const;
+		bool					client_is_operator(std::string nickname) const;
+		Client*					get_owner() const;
+		bool					client_is_owner(std::string nickname)	const;
 
 		void	set_name(std::string name);
 		void	set_topic(std::string topic);
-		bool	add_client(Client &client);
-		bool	remove_client(Client &client);
-		bool	add_operator(Client &client);
-		bool	remove_operator(Client &client);
+		bool	add_client(Client* client);
+		bool	remove_client(Client* client);
+		bool	add_operator(Client* client);
+		bool	remove_operator(Client* client);
+		int		leave_channel(Client* client);
 };
 
 #endif
