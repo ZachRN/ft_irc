@@ -3,7 +3,8 @@
 #include "server.hpp"
 
 //Hard defining instead of making a .h
-void	run_tests(void);
+// void	run_tests(void);
+void	client_channel_tests(void);
 
 int	main(int argc, char *argv[])
 {
