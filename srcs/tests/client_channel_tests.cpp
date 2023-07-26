@@ -259,6 +259,7 @@ void	client_channel_tests(void)
 		return ;
 	if (remove_user() != SUCCESS)
 		return ;
+	//Leaving Channel, Channel Removal, Passing Ownership.
 	// if (remove_user_from_channel() != SUCCESS)
 		// return ;
 }
