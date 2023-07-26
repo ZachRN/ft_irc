@@ -39,7 +39,7 @@ class Server
 		
 		//Nickname is for 	some reason what IRC uses as a way
 		//to uniquely define people, thus a nickname == username in modern
-		std::map<int, Client>& get_clientList();
+		std::map<int, Client>* get_clientList();
 		Client*		get_client(int fd);
 		Client*		get_client(std::string nickname);
 		//Not Sure how we want to handle errors with adding and removing clients
@@ -53,7 +53,7 @@ class Server
 		//End of Client Map Functions
 		
 		//Stat of Channel Map Functions
-		std::map<std::string, Channel>& get_channelList();
+		std::map<std::string, Channel>* get_channelList();
 		Channel*	get_channel(std::string channelName);
 		int	add_channel(std::string channelName, Client &client);
 		int	remove_channel(std::string channelName);

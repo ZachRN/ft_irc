@@ -38,9 +38,9 @@ int	Server::get_port() const
 //End of Regular Variable Functions
 
 //Client Map Functions
-std::map<int, Client>& Server::get_clientList()
+std::map<int, Client>* Server::get_clientList()
 {
-	return (_clientList);
+	return (&_clientList);
 }
 
 
@@ -72,7 +72,7 @@ int	Server::add_client(int fd)
 		return (FD_IN_USE);
 	// if (!name_syntax_check(nickname) || !name_syntax_check(username))
 	// 	return (NAME_SYNTAX_INVALID);
-	Client client(fd, *this);
+	Client client(fd, this);
 	_clientList.insert(std::make_pair(fd, client));
 	return (SUCCESS);
 }
@@ -96,9 +96,9 @@ bool	Server::nickname_in_use(std::string nickname)
 
 //Stat of Channel Map Functions
 
-std::map<std::string, Channel>& Server::get_channelList()
+std::map<std::string, Channel>* Server::get_channelList()
 {
-	return (_channelList);
+	return (&_channelList);
 }
 
 Channel*	Server::get_channel(std::string channelName)
@@ -115,7 +115,7 @@ int	Server::add_channel(std::string channelName, Client &client)
 		return (CHANNEL_NAME_IN_USE);
 	if (name_syntax_check(channelName) != SUCCESS)
 		return (NAME_SYNTAX_INVALID);
-	Channel channel(channelName, client);
+	Channel channel(channelName, &client, this);
 	_channelList.insert(std::make_pair(channelName, channel));
 	return (SUCCESS);
 }
