@@ -34,6 +34,7 @@
 # Custom, program name, .vscode, .DS_store and build incase of object file
 ircserv
 testpleaseignore.cpp
+test.cpp
 .vscode
 .DS_store
 build

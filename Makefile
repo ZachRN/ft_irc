@@ -4,8 +4,7 @@ VPATH := $(subst $(" "),:,$(shell find srcs -type d))
 SRCS += $(wildcard srcs/*.cpp srcs/*/*.cpp) 
 OBJ_FILES = $(addprefix $(BUILD_DIR)/, $(notdir $(patsubst %.cpp, %.o, $(SRCS))))
 HEADER_FILES := $(addprefix -I,$(shell find includes -type d -print))
-CFLAGS = -Wall -Wextra -Werror -std=c++98 #NOTE C98 NOT ENFORCED ANYMORE
-#-g -fsanitize=adress 
+CFLAGS = -Wall -Wextra -Werror -std=c++98 -g -fsanitize=address #NOTE C98 NOT ENFORCED ANYMORE
 CC = c++
 
 all: build_dir $(NAME)

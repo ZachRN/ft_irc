@@ -6,7 +6,25 @@
 #include "numeric_replies.hpp"
 #include "server.hpp"
 
-#include <ctime>
+int send_msg(int sockfd, std::string msg)
+{
+	int bytesSent = send(sockfd, msg.c_str(), msg.length(), 0);
+	if (bytesSent == -1)
+	{
+		std::cerr << "Error sending data to client " << sockfd << ": " << strerror(errno) << std::endl;
+	}
+	return (bytesSent);
+}
+
+void ping_all_clients(Server server)
+{
+	std::map<int, Client>::iterator it = server.get_clientList()->begin();
+	while (it != server.get_clientList()->end())
+	{
+		send(it->first, "PING :irc.localhost\n", 20, 0);
+		++it;
+	}
+}
 
 int start_listening(Server server)
 {
@@ -75,7 +93,7 @@ int check_client_sockets(Server server, int nfds, struct pollfd *fds)
 int run_server(Server server)
 {
 	std::vector<int>	client_sockets;
-	struct pollfd		fds[server.get_maxClients() + 1]; // +1 for the server socket
+	struct pollfd		fds[server.get_config().get_maxClients() + 1]; // +1 for the server socket
 	int					nfds = 1; // Number of file descriptors being monitored (initially 1 for the server socket)
 	struct sockaddr_in	clientAddr;
 	socklen_t			clientAddrLen = sizeof(clientAddr);
@@ -102,7 +120,7 @@ int run_server(Server server)
 		if (fds[0].revents & POLLIN)
 		{
 			int clientSocket = accept(server.get_socket(), (struct sockaddr*)&clientAddr, &clientAddrLen);
-			if (clientSocket != -1 && nfds < server.get_maxClients() + 1)
+			if (clientSocket != -1 && nfds < server.get_config().get_maxClients() + 1)
 			{
 				//fcntl(clientSocket, F_SETFL, O_NONBLOCK); // Set the client socket to non-blocking mode
 
@@ -112,24 +130,18 @@ int run_server(Server server)
 				++nfds;
 				server.add_client(clientSocket);
 				std::cout << "New client connected #" << clientSocket << "." << std::endl;
-				send(clientSocket, ":irc.localhost 001 test :Welcome to the Internet Relay Network test!test@localhost\n", 83, 0);
-				send(clientSocket, ":irc.localhost 002 test :Your host is irc.localhost, running version 1.0\n", 73, 0);
-				send(clientSocket, ":irc.localhost 003 test :This server was created sometime\n", 58, 0);
-				send(clientSocket, ":irc.localhost 004 test irc.localhost 1.0 o o\n", 46, 0);
-				send(clientSocket, ":irc.localhost 375 test :- irc.localhost Message of the Day - \n", 63, 0);
-				send(clientSocket, ":irc.localhost 372 test :- Welcome to the Internet Relay Network test!test@localhost\n", 85, 0);
-				send(clientSocket, ":irc.localhost 376 test :End of MOTD command\n", 45, 0);
+				send(clientSocket, ":localhost 001 test :Welcome to the Internet Relay Network test!test@localhost\n", 83, 0);
+				send(clientSocket, ":localhost 002 test :Your host is localhost, running version 1.0\n", 73, 0);
+				send(clientSocket, ":localhost 003 test :This server was created sometime\n", 58, 0);
+				send(clientSocket, ":localhost 004 test localhost 1.0 o o\n", 46, 0);
+				send(clientSocket, ":localhost 375 test :- localhost Message of the Day - \n", 63, 0);
+				send(clientSocket, ":localhost 372 test :- Welcome to the Internet Relay Network.\n", 85, 0);
+				send(clientSocket, ":localhost 376 test :End of MOTD command\n", 45, 0);
 			}
 			else if (clientSocket != -1)
 			{
-				std::string message;
-				message.append(":irc.localhost");
-				message.append(" ");
-				message.append(std::to_string(ERR_SERVERISFULL));
-				message.append(" ");
-				message.append("test :Server is full.\n");
 				std::cerr << "Max clients reached." << std::endl;
-				send(clientSocket, message.c_str(), message.length(), 0);
+				send_msg(clientSocket, ":localhost 999 test :Server is full.\n");
 				close(clientSocket);
 			}
 			else
@@ -140,6 +152,7 @@ int run_server(Server server)
 		nfds = check_client_sockets(server, nfds, fds);
 		for (int i = 0; i < nfds; ++i)
 		{
+			send_msg(fds[i].fd, "PING localhost\n");
 			send(fds[i].fd, "PING :irc.localhost\n", 20, 0);
 		}
 	}

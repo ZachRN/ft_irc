@@ -7,6 +7,7 @@
 # include <netinet/in.h>
 # include "client.hpp"
 # include "channel.hpp"
+# include "config.hpp"
 
 # define SUCCESS 0
 # define FAILURE 1
@@ -22,13 +23,11 @@
 class Server
 {
 	private:
-		//probably dont need to change or have a server name
-		// std::string _name;
-		std::string _pass;
+		Config		_config;
+		std::string	_pass;
 		int			_port;
 		std::map<int, Client> _clientList;
 		std::map<std::string, Channel> _channelList;
-		int			_maxClients;
 		int			_socket;
 		struct sockaddr_in	_serverAddr;
 	public:
@@ -37,6 +36,7 @@ class Server
 		~Server();
 		
 		// regular variable functions
+		Config		get_config() const;
 		// std::string	get_name() const;
 		std::string	get_pass() const;
 		int			get_port() const;
@@ -48,8 +48,6 @@ class Server
 		std::map<int, Client>* get_clientList();
 		Client*		get_client(int fd);
 		Client*		get_client(std::string nickname);
-		int			get_maxClients() const;
-		void		set_maxClients(int maxClients);
 		//Not Sure how we want to handle errors with adding and removing clients
 		//Do we want to throw? Right now it is early return, maybe change function to
 		//A bool and return true or false depending on pass/fail.
@@ -60,15 +58,18 @@ class Server
 		bool	nickname_in_use(std::string nickname);
 		//End of Client Map Functions
 		
-		//Stat of Channel Map Functions
+		//Start of Channel Map Functions
 		std::map<std::string, Channel>* get_channelList();
 		Channel*	get_channel(std::string channelName);
 		int	add_channel(std::string channelName, Client &client);
 		int	remove_channel(std::string channelName);
-		//Socket Functions
+		//End of Channel Map Functions
+
+		//Start of Socket Functions
 		int		get_socket() const;
 		int		init_socket();
 		int		close_socket();
+		//End of Socket Functions
 };
 
 #endif

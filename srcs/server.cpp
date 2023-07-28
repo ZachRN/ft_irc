@@ -7,6 +7,7 @@
 #include "server.hpp"
 #include "client.hpp"
 #include "channel.hpp"
+#include "config.hpp"
 #include "utils.hpp"
 
 //Initilization
@@ -29,6 +30,11 @@ Server::~Server()
 // {
 // 	return (_name);
 // }
+
+Config	Server::get_config() const
+{
+	return (_config);
+}
 
 std::string	Server::get_pass() const
 {
@@ -65,17 +71,6 @@ Client* Server::get_client(std::string nickname)
 			return (&it->second);
 	}
 	return (nullptr);
-}
-
-
-int	Server::get_maxClients() const
-{
-	return (_maxClients);
-}
-
-void	Server::set_maxClients(int maxClients)
-{
-	_maxClients = maxClients;
 }
 
 //Current solution is to use enums instead of throwing for explicit error messages
