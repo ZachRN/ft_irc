@@ -33,6 +33,9 @@ Channel	&Channel::operator=(const Channel &copy)
 {
 	_name = copy._name;
 	_topic = copy._topic;
+	_password = copy._password;
+	_invite = copy._invite;
+	_userlimit = copy._userlimit;
 	_clients = copy._clients;
 	_operators = copy._operators;
 	_server = copy._server;
@@ -58,11 +61,6 @@ std::string	Channel::get_password() const
 bool		Channel::get_invite() const
 {
 	return (_invite);
-}
-
-size_t		Channel::get_limit() const
-{
-	return (_userlimit);
 }
 
 std::vector<Client*>	Channel::get_clients() const
@@ -176,7 +174,7 @@ int		Channel::add_operator(Client* to_promote, Client* promoter)
 {
 	if (client_is_operator(to_promote->get_nickname()))
 		return (ALREADY_OPERATOR);
-	if (!(client_is_owner(promoter->get_nickname())))
+	if (!(client_is_operator(promoter->get_nickname())))
 		return (REQUIRED_OPERATOR);
 	_operators.push_back(to_promote);
 	return (SUCCESS);
@@ -188,22 +186,24 @@ int		Channel::remove_operator(Client* to_demote, Client* demoter)
 		return (UNABLE_TO_DEMOTE_OWNER);
 	if (!(client_is_operator(demoter->get_nickname())))
 		return (REQUIRED_OPERATOR);
+	if (!(client_is_operator(to_demote->get_nickname())))
+		return (NOT_AN_OPERATOR);
 	for (std::vector<Client *>::iterator it = _operators.begin(); it != _operators.end(); it++)
 	{
 		if ((*it)->get_fd() == to_demote->get_fd())
 		{
 			_operators.erase(it);
-			return (true);
+			return (SUCCESS);
 		}
 	}
-	return (false);
+	return (FAILURE);
 }
 
-int		Channel::set_invite(Client* client)
+int		Channel::set_invite(Client* client, bool mode)
 {
 	if (!client_is_operator(client->get_nickname()))
 		return (REQUIRED_OPERATOR);
-	_invite = !_invite;
+	_invite = mode;
 	return (SUCCESS);	
 }
 
@@ -217,6 +217,21 @@ int		Channel::set_password(std::string password, Client* client)
 	return (SUCCESS);
 }
 
+size_t		Channel::get_limit() const
+{
+	return (_userlimit);
+}
+
+int			Channel::set_limit(size_t limit, Client* client)
+{
+	if (!(client_is_operator(client->get_nickname())))
+		return (REQUIRED_OPERATOR);
+	//REPLACE WITH SERVERCONFIG
+	if (limit > 4096)
+		return (TOO_HIGH_OF_LIMIT);
+	_userlimit = limit;
+	return (SUCCESS);
+}
 
 //Setting Limit to 0 could fix it, but not sure, ask frans
 // int		Channel::set_userlimit(size_t limit, Client* client)
