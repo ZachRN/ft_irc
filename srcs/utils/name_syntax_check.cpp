@@ -1,11 +1,12 @@
 #include "iostream"
+#include "server.hpp"
 
 bool	name_syntax_check(std::string str)
 {
 	//This entire function checks the syntax of the str
 	//If every character is not between 0-9A-Za-z or is ' ' - _ then return error
-	if (str.length() < 1 || str.length() > 9)
-		return (false);
+	if (str.length() < 1 || str.length() > 16)
+		return (FAILURE);
 	for (std::size_t i = 0; i < str.length(); i++)
 	{
 		if (!((str[i] >= 'a' && str[i] <= 'z')
@@ -13,8 +14,8 @@ bool	name_syntax_check(std::string str)
 		|| (str[i] >= '0' && str[i] <= '9')
 		|| (str[i] == '.' || str[i] == '-' || str[i] == '_')))
 		{
-			return (false);
+			return (FAILURE);
 		}
 	}
-	return (true);
+	return (SUCCESS);
 }
