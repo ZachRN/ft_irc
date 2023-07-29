@@ -40,6 +40,7 @@ Channel	&Channel::operator=(const Channel &copy)
 	_operators = copy._operators;
 	_server = copy._server;
 	_owner = copy._owner;
+	_invitelist = copy._invitelist;
 	return (*this);
 }
 
@@ -197,6 +198,38 @@ int		Channel::remove_operator(Client* to_demote, Client* demoter)
 		}
 	}
 	return (FAILURE);
+}
+
+int		Channel::invite(Client* invitee, Client* inviter)
+{
+	if (!(client_is_operator(inviter->get_nickname())))
+		return (REQUIRED_OPERATOR);
+	_invitelist.push_back(invitee);
+	return (SUCCESS);
+}
+int		Channel::remove_invite(Client* invitee, Client* inviter)
+{
+	if (!(client_is_operator(inviter->get_nickname())) && invitee != inviter)
+		return (REQUIRED_OPERATOR);
+	for (std::vector<Client *>::iterator it = _invitelist.begin(); it != _invitelist.end(); it++)
+	{
+		if ((*it)->get_fd() == invitee->get_fd())
+		{
+			_invitelist.erase(it);
+			return (SUCCESS);
+		}
+	}
+	return (FAILURE);
+}
+
+bool	Channel::is_invited(std::string nickname)
+{
+	for (std::vector<Client*>::const_iterator it = _invitelist.begin(); it != _invitelist.end(); it++)
+	{
+		if ((*it)->get_nickname() == nickname)
+			return (true);
+	}
+	return (false);
 }
 
 int		Channel::set_invite(Client* client, bool mode)

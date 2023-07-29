@@ -80,13 +80,13 @@ Server*		Client::get_server() const
 	return (_server);
 }
 
-static int	can_join_channel(Channel* channel, std::string password)
+static int	can_join_channel(Channel* channel, std::string password, std::string nickname)
 {
 	if (channel->get_password() != password)
 		return (PASSWORD_INVALID);
-	if (channel->get_clients().size() >= channel->get_limit())
+	if (channel->get_clients().size() >= channel->get_limit() && channel->get_limit() != 0)
 		return (USER_LIMIT);
-	if (channel->get_invite() == false)
+	if (channel->get_invite() == true && channel->is_invited(nickname) == false)
 		return (REQUIRED_INVITE);
 	return (SUCCESS);
 }
@@ -104,7 +104,7 @@ int			Client::join_channel(std::string channelName, std::string password)
 		_channelList.push_back(&serverchannelList->find(channelName)->second);
 		return (SUCCESS);
 	}
-	int retvalue = can_join_channel(&serverchannelIt->second, password);
+	int retvalue = can_join_channel(&serverchannelIt->second, password, get_nickname());
 	if (retvalue != SUCCESS)
 		return (retvalue);
 	_channelList.push_back(&serverchannelIt->second);
@@ -113,6 +113,7 @@ int			Client::join_channel(std::string channelName, std::string password)
 		_channelList.pop_back();
 		return (FAILURE);
 	}
+	serverchannelIt->second.remove_invite(this, this);
 	return (SUCCESS);
 }
 

@@ -74,6 +74,7 @@ class Channel
 		Server*		_server;
 		std::vector<Client*>	_clients;
 		std::vector<Client*>	_operators;
+		std::vector<Client*>	_invitelist;
 		Client*		_owner;
 		size_t		_userlimit;
 	public:
@@ -81,7 +82,8 @@ class Channel
 		Channel(const Channel &copy);
 		~Channel();
 		Channel	&operator=(const Channel &copy);
-		
+
+		//name
 		std::string				get_name() const;
 		std::string				get_topic() const;
 		std::string				get_password() const;
@@ -102,7 +104,9 @@ class Channel
 		int		kick(Client* to_kick, Client* kicker);
 		int		add_operator(Client* to_promote, Client* promoter);
 		int		remove_operator(Client* to_demote, Client* demoter);
-		//INVITE TO CHANNEL
+		int		invite(Client* invitee, Client* inviter);
+		int		remove_invite(Client* invitee, Client* inviter);
+		bool	is_invited(std::string nickname);
 		int		set_invite(Client* client, bool mode);
 		int		set_password(std::string password, Client* client);
 		size_t	get_limit() const;

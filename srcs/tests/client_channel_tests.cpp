@@ -29,6 +29,12 @@ int	user_creation_test()
 	}
 	else
 		std::cout << "SUCCESS:Able to set username" << std::endl;
+	if (client->set_username("") == SUCCESS || client->set_nickname("12312312312312312312312312") == SUCCESS)
+	{
+		std::cout << "ERROR: NAME SYNTAX NOT WORKING" << std::endl;
+		return (FAILURE);
+	}
+		std::cout << "SUCCESS: NAME SYNTAX CHECK WORKING" << std::endl;
 	std::cout << "\n----------------" << std::endl;
 	return (SUCCESS);
 }
@@ -395,10 +401,8 @@ int	add_remove_operator()
 	}
 	else
 		std::cout << "SUCCESS: OPERATOR UNABLE TO DEMOTE OWNER" << std::endl;
-	int a = channel->remove_operator(mike, zach);
-	if (a != SUCCESS)
+	if (channel->remove_operator(mike, zach) != SUCCESS)
 	{
-		std::cout << a << std::endl;
 		std::cout << "ERROR: OWNER UNABLE TO DEMOTE OPERATOR" << std::endl;
 		return (FAILURE);
 	}
@@ -580,7 +584,67 @@ int	password_channel_tests()
 
 int	user_limit_tests()
 {
-	std::cout << "misc_tests" << std::endl;
+	std::cout << "user_limit_tests" << std::endl;
+	Server ircServ("pass", 123);
+	ircServ.add_client(4);
+	ircServ.add_client(5);
+	ircServ.add_client(6);
+	ircServ.add_client(7);
+	Client *zach = ircServ.get_client(4);
+	Client *mike = ircServ.get_client(5);
+	Client *frans = ircServ.get_client(6);
+	Client *patrick = ircServ.get_client(7);
+	zach->set_nickname("Zach");
+	mike->set_nickname("Mike");
+	frans->set_nickname("Frans");
+	patrick->set_nickname("Patrick");
+	zach->join_channel("Zachs_Home", "");
+	mike->join_channel("Zachs_Home", "");
+	frans->join_channel("Zachs_Home", "");
+	Channel* channel = ircServ.get_channel("Zachs_Home");
+	channel->add_operator(mike, zach);
+	if (channel->set_limit(1, zach) != SUCCESS)
+	{
+		std::cout << "ERROR: OWNER UNABLE TO SET USER LIMIT" << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: OWNER ABLE TO SET USER LIMIT" << std::endl;
+	if (channel->set_limit(1, mike) != SUCCESS)
+	{
+		std::cout << "ERROR: OPERATOR UNABLE TO SET USER LIMIT" << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: OPERATOR ABLE TO SET USER LIMIT" << std::endl;
+	if (channel->set_limit(1, frans) == SUCCESS)
+	{
+		std::cout << "ERROR: CLIENT ABLE TO SET USER LIMIT" << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: CLIENT UNABLE TO SET USER LIMIT" << std::endl;
+	if (patrick->join_channel("Zachs_Home", "") == SUCCESS)
+	{
+		std::cout << "ERROR: CLIENT JOINED PASSED CLIENT LIMIT." << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: CLIENT UNABLE TO JOIN PAST CLIENT LIMIT." << std::endl;
+	if (channel->set_limit(50000, zach) == SUCCESS)
+	{
+		std::cout << "ERROR: ABLE TO SET LIMIT OVER CONFIG SETTING." << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: UNABLE TO SET LIMIT OVER CONFIG SETTING." << std::endl;
+	std::cout << "\n----------------" << std::endl;
+	return (SUCCESS);
+}
+
+int	invite_tests()
+{
+	std::cout << "INVITE_tests" << std::endl;
 	Server ircServ("pass", 123);
 	ircServ.add_client(4);
 	ircServ.add_client(5);
@@ -596,38 +660,93 @@ int	user_limit_tests()
 	patrick->set_nickname("Patrick");
 	zach->join_channel("Zachs_Home", "");
 	Channel* channel = ircServ.get_channel("Zachs_Home");
-	if (channel->set_limit(1, zach) != SUCCESS)
+	if (channel->set_invite(zach, true) != SUCCESS)
 	{
 		std::cout << "ERROR: OWNER UNABLE TO SET_INVITE" << std::endl;
 		return (FAILURE);
 	}
+	else
+		std::cout << "SUCCESS: OWNER ABLE TO SET_INVITE" << std::endl;
+	if (mike->join_channel("Zachs_Home", "") == SUCCESS)
+	{
+		std::cout << "ERROR: CLIENT ABLE TO JOIN WITHOUT AN INVITE" << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: CLIENT UNABLE TO JOIN WITHOUT AN INVITE" << std::endl;
+	if (channel->invite(mike, zach) != SUCCESS)
+	{
+		std::cout << "ERROR: OWNER UNABLE TO INVITE CLIENT" << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: OWNER ABLE TO INVITE CLIENT" << std::endl;
+	if (channel->is_invited(mike->get_nickname()) != true)
+	{
+		std::cout << "ERROR: CHANNEL INVITE LIST FAILED TO ADD CLIENT" << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: CHANNEL INVITE LIST ADDED CLIENT" << std::endl;
+	if (mike->join_channel("Zachs_Home", "") != SUCCESS)
+	{
+		std::cout << "ERROR: CLIENT UNABLE TO JOIN CHANNEL AFTER INVITED" << std::endl;
+		return (FAILURE);
+	}
+		std::cout << "SUCCESS: CLIENT ABLE TO JOIN CHANNEL AFTER INVITED" << std::endl;
+	if (channel->is_invited(mike->get_nickname()) == true)
+	{
+		std::cout << "ERROR: CHANNEL INVITE LIST FAILED TO REMOVED CLIENT" << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: CHANNEL INVITE LIST REMOVED CLIENT" << std::endl;
+	channel->add_operator(mike, zach);
+	if (channel->invite(frans, mike) != SUCCESS)
+	{
+		std::cout << "ERROR: OPERATOR UNABLE TO INVITE CLIENT TO CHANNEL" << std::endl;
+		return (FAILURE);
+	}
+		std::cout << "SUCCESS: OPERATOR ABLE TO INVITE CLIENT TO CHANNEL" << std::endl;
+	frans->join_channel("Zachs_Home", "");
+	if (channel->invite(patrick, frans) == SUCCESS)
+	{
+		std::cout << "ERROR: CLIENT ABLE TO INVITE CLIENT TO CHANNEL" << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: CLIENT UNABLE TO INVITE CLIENT TO CHANNEL" << std::endl;
+	std::cout << "\n----------------" << std::endl;
 	return (SUCCESS);
 }
-// int	invite_tests()
-// {
-// 	std::cout << "misc_tests" << std::endl;
-// 	Server ircServ("pass", 123);
-// 	ircServ.add_client(4);
-// 	ircServ.add_client(5);
-// 	ircServ.add_client(6);
-// 	ircServ.add_client(7);
-// 	Client *zach = ircServ.get_client(4);
-// 	Client *mike = ircServ.get_client(5);
-// 	Client *frans = ircServ.get_client(6);
-// 	Client *patrick = ircServ.get_client(7);
-// 	zach->set_nickname("Zach");
-// 	mike->set_nickname("Mike");
-// 	frans->set_nickname("Frans");
-// 	patrick->set_nickname("Patrick");
-// 	zach->join_channel("Zachs_Home", "");
-// 	Channel* channel = ircServ.get_channel("Zachs_Home");
-// 	if (channel->set_invite(zach, false) != SUCCESS)
-// 	{
-// 		std::cout << "ERROR: OWNER UNABLE TO SET_INVITE" << std::endl;
-// 		return (FAILURE);
-// 	}
-// 	return (SUCCESS);
-// }
+
+int	topic_tests()
+{
+	std::cout << "INVITE_tests" << std::endl;
+	Server ircServ("pass", 123);
+	ircServ.add_client(4);
+	Client *zach = ircServ.get_client(4);
+	zach->set_nickname("Zach");
+	zach->join_channel("Zachs_Home", "");
+	Channel* channel = ircServ.get_channel("Zachs_Home");
+	std::string topic = "This is a brand new topic!";
+	if (channel->set_topic(topic, zach) != SUCCESS)
+	{
+		std::cout << "ERROR: OWNER UNABLE TO SET_TOPIC" << std::endl;
+		return (FAILURE);
+	}
+	else
+		std::cout << "SUCCESS: OWNER ABLE TO SET_TOPIC" << std::endl;
+	if (channel->get_topic() != topic)
+	{
+		std::cout << "ERROR: TOPIC NOT EQUAL TO TOPIC JUST SET" << std::endl;
+		return (FAILURE);
+	}
+		std::cout << "SUCCESS: TOPIC SET CORRECTLY." << std::endl;
+	std::cout << "\n----------------" << std::endl;
+	return (SUCCESS);
+}
+
 
 void	client_channel_tests(void)
 {
@@ -655,6 +774,11 @@ void	client_channel_tests(void)
 		return ;
 	if (user_limit_tests() != SUCCESS)
 		return ;
+	if (invite_tests() != SUCCESS)
+		return ;
+	if (topic_tests() != SUCCESS)
+		return ;
+	std::cout << "ALL TESTS PASSED SUCCESSFULLY" << std::endl;
 	// system("leaks -q ircserv");
 	// system("lsof -c ircserv");
 	//Leaving Channel, Channel Removal, Passing Ownership.
