@@ -48,6 +48,18 @@ enum ChannelErrors
 {
 	CHANNEL_NAME_IN_USE = 1,
 	NO_CHANNEL_FOUND,
+	UNABLE_TO_DEMOTE_OWNER,
+	REQUIRED_OWNER,
+	REQUIRED_OPERATOR,
+	ALREADY_OPERATOR,
+	ALREADY_IN_CHANNEL,
+	PASSWORD_INVALID,
+	USER_LIMIT,
+	CANT_KICK_OWNER,
+	NOT_IN_CHANNEL,
+	NOT_AN_OPERATOR,
+	REQUIRED_INVITE,
+	TOO_HIGH_OF_LIMIT
 };
 
 class Server;
@@ -55,20 +67,27 @@ class Server;
 class Channel
 {
 	private:
-		std::string				_name;
-		std::string				_topic;
-		Server*					_server;
+		std::string	_name;
+		std::string	_topic;
+		std::string	_password;
+		bool		_invite;
+		Server*		_server;
 		std::vector<Client*>	_clients;
 		std::vector<Client*>	_operators;
-		Client*				_owner;
+		std::vector<Client*>	_invitelist;
+		Client*		_owner;
+		size_t		_userlimit;
 	public:
 		Channel(std::string name, Client* creator, Server *server);
 		Channel(const Channel &copy);
 		~Channel();
 		Channel	&operator=(const Channel &copy);
-		
+
+		//name
 		std::string				get_name() const;
 		std::string				get_topic() const;
+		std::string				get_password() const;
+		bool					get_invite() const;
 		std::vector<Client*>	get_clients() const;
 		bool					client_in_channel(std::string nickname) const;
 		std::vector<Client*>	get_operators() const;
@@ -76,13 +95,23 @@ class Channel
 		Client*					get_owner() const;
 		bool					client_is_owner(std::string nickname)	const;
 
-		void	set_name(std::string name);
-		void	set_topic(std::string topic);
 		bool	add_client(Client* client);
 		bool	remove_client(Client* client);
-		bool	add_operator(Client* client);
-		bool	remove_operator(Client* client);
 		int		leave_channel(Client* client);
+
+		//OPERATOR ONLY COMMANDS
+		int		set_topic(std::string topic, Client* client);
+		int		kick(Client* to_kick, Client* kicker);
+		int		add_operator(Client* to_promote, Client* promoter);
+		int		remove_operator(Client* to_demote, Client* demoter);
+		int		invite(Client* invitee, Client* inviter);
+		int		remove_invite(Client* invitee, Client* inviter);
+		bool	is_invited(std::string nickname);
+		int		set_invite(Client* client, bool mode);
+		int		set_password(std::string password, Client* client);
+		size_t	get_limit() const;
+		int		set_limit(size_t limit, Client* client);
+		
 };
 
 #endif

@@ -50,7 +50,7 @@ std::string	Client::get_nickname() const
 
 int	Client::set_nickname(std::string nickname)
 {
-	if (name_syntax_check(nickname) == false)
+	if (name_syntax_check(nickname) != SUCCESS)
 		return (NAME_SYNTAX_INVALID);
 	if (_server->nickname_in_use(nickname) == true)
 		return (NAME_ALREADY_INUSE);
@@ -67,7 +67,7 @@ std::string	Client::get_username() const
 
 int	Client::set_username(std::string username)
 {
-	if (name_syntax_check(username) == false)
+	if (name_syntax_check(username) != SUCCESS)
 		return (NAME_SYNTAX_INVALID);
 	_username = username;
 	if (_nickname != "")
@@ -80,12 +80,23 @@ Server*		Client::get_server() const
 	return (_server);
 }
 
-int			Client::join_channel(std::string channelName)
+static int	can_join_channel(Channel* channel, std::string password, std::string nickname)
+{
+	if (channel->get_password() != password)
+		return (PASSWORD_INVALID);
+	if (channel->get_clients().size() >= channel->get_limit() && channel->get_limit() != 0)
+		return (USER_LIMIT);
+	if (channel->get_invite() == true && channel->is_invited(nickname) == false)
+		return (REQUIRED_INVITE);
+	return (SUCCESS);
+}
+
+int			Client::join_channel(std::string channelName, std::string password)
 {
 	std::map<std::string, Channel>* serverchannelList = _server->get_channelList();
 	std::map<std::string, Channel>::iterator serverchannelIt = serverchannelList->find(channelName);
 	if (is_in_channel(channelName) == true)
-		return (FAILURE);
+		return (ALREADY_IN_CHANNEL);
 	if (serverchannelIt == serverchannelList->end())
 	{
 		if (_server->add_channel(channelName, *this) != SUCCESS)
@@ -93,12 +104,16 @@ int			Client::join_channel(std::string channelName)
 		_channelList.push_back(&serverchannelList->find(channelName)->second);
 		return (SUCCESS);
 	}
+	int retvalue = can_join_channel(&serverchannelIt->second, password, get_nickname());
+	if (retvalue != SUCCESS)
+		return (retvalue);
 	_channelList.push_back(&serverchannelIt->second);
 	if (serverchannelIt->second.add_client(this) != SUCCESS)
 	{
 		_channelList.pop_back();
 		return (FAILURE);
 	}
+	serverchannelIt->second.remove_invite(this, this);
 	return (SUCCESS);
 }
 

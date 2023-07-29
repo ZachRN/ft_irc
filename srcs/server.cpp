@@ -82,6 +82,10 @@ int	Server::remove_client(int fd)
 	std::map<int, Client>::iterator client = _clientList.find(fd);
 	if (client == _clientList.end())
 		return (NO_CLIENT_FOUND);
+	//Remove Client From Every Channel
+	// std::vector<Channel*> channelList = client->second.get_channelList();
+	// for (std::vector<Channel*>::iterator it = channelList.begin(); it != channelList.end();)
+	// 		client->second.leave_channel((*it)->get_name());
 	_clientList.erase(client);
 	return (SUCCESS);
 }
