@@ -38,7 +38,7 @@ class Client
 		std::string	_username;
 		//This says if the setup process of their account is complete.
 		bool		_verified;
-		std::time_t	_lastPong;
+		//std::time_t	_lastPong; Reinstate this later
 		Server		*_server;
 		std::vector<Channel*> _channelList;
 	public:

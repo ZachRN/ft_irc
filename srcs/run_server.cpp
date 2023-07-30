@@ -130,13 +130,13 @@ int run_server(Server server)
 				++nfds;
 				server.add_client(clientSocket);
 				std::cout << "New client connected #" << clientSocket << "." << std::endl;
-				send(clientSocket, ":localhost 001 test :Welcome to the Internet Relay Network test!test@localhost\n", 83, 0);
-				send(clientSocket, ":localhost 002 test :Your host is localhost, running version 1.0\n", 73, 0);
-				send(clientSocket, ":localhost 003 test :This server was created sometime\n", 58, 0);
-				send(clientSocket, ":localhost 004 test localhost 1.0 o o\n", 46, 0);
-				send(clientSocket, ":localhost 375 test :- localhost Message of the Day - \n", 63, 0);
-				send(clientSocket, ":localhost 372 test :- Welcome to the Internet Relay Network.\n", 85, 0);
-				send(clientSocket, ":localhost 376 test :End of MOTD command\n", 45, 0);
+				send_msg(clientSocket, ":localhost 001 test :Welcome to the Internet Relay Network test!test@localhost\n");
+				send_msg(clientSocket, ":localhost 002 test :Your host is localhost, running version 1.0\n");
+				send_msg(clientSocket, ":localhost 003 test :This server was created sometime\n");
+				send_msg(clientSocket, ":localhost 004 test localhost 1.0 o o\n");
+				send_msg(clientSocket, ":localhost 375 test :- localhost Message of the Day - \n");
+				send_msg(clientSocket, ":localhost 372 test :- Welcome to the Internet Relay Network.\n");
+				send_msg(clientSocket, ":localhost 376 test :End of MOTD command\n");
 			}
 			else if (clientSocket != -1)
 			{
@@ -150,10 +150,9 @@ int run_server(Server server)
 			}
 		}
 		nfds = check_client_sockets(server, nfds, fds);
-		for (int i = 0; i < nfds; ++i)
+		for (int i = 1; i < nfds; ++i)
 		{
 			send_msg(fds[i].fd, "PING localhost\n");
-			send(fds[i].fd, "PING :irc.localhost\n", 20, 0);
 		}
 	}
 	return (SUCCESS);
