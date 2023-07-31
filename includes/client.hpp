@@ -57,7 +57,7 @@ class Client
 		Server*		get_server() const;
 
 		//User Actions
-		int			join_channel(std::string channelName);
+		int			join_channel(std::string channelName, std::string password);
 		int			leave_channel(std::string channelName);
 		std::vector<Channel*> get_channelList(void);
 		Channel*	get_channel(std::string channelName);
