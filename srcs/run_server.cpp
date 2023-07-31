@@ -5,6 +5,7 @@
 #include <vector>
 #include "numeric_replies.hpp"
 #include "server.hpp"
+#include "input_process.hpp"
 
 int send_msg(int sockfd, std::string msg)
 {
@@ -40,7 +41,7 @@ int start_listening(Server server)
 	return (SUCCESS);
 }
 
-int check_client_sockets(Server server, int nfds, struct pollfd *fds)
+int check_client_sockets(Server *server, int nfds, struct pollfd *fds)
 {
 	// Check for data on client sockets (starting from 1, as 0 is the server socket)
 	for (int i = 1; i < nfds; ++i)
@@ -52,16 +53,16 @@ int check_client_sockets(Server server, int nfds, struct pollfd *fds)
 			if (bytesRead > 0)
 			{
 				buffer[bytesRead] = '\0';
-				// THIS IS WHERE WE GO INTO COMMAND PROCESSING
-				std::cout << "Received from client " << fds[i].fd << ": " << buffer << std::endl;
+				input_process(fds[i].fd, buffer, server);
+				// std::cout << "Received from client " << fds[i].fd << ": " << buffer << std::endl;
 
 				// Send a response back to the client (for testing purposes)
-				const char* response = "Received your message.\n";
-				send(fds[i].fd, response, strlen(response), 0);
+				// const char* response = "Received your message.\n";
+				// send(fds[i].fd, response, strlen(response), 0);
 			} else if (bytesRead == 0)
 			{
 				std::cout << "Client " << fds[i].fd << " disconnected." << std::endl;
-				server.remove_client(fds[i].fd);
+				server->remove_client(fds[i].fd);
 				close(fds[i].fd);
 				// Shift the rest of the clients in the array to remove the disconnected client
 				for (int j = i; j < nfds - 1; ++j)
@@ -149,11 +150,11 @@ int run_server(Server server)
 				std::cerr << "Error accepting client connection: " << strerror(errno) << std::endl;
 			}
 		}
-		nfds = check_client_sockets(server, nfds, fds);
-		for (int i = 1; i < nfds; ++i)
-		{
-			send_msg(fds[i].fd, "PING localhost\n");
-		}
+		nfds = check_client_sockets(&server, nfds, fds);
+		// for (int i = 1; i < nfds; ++i)
+		// {
+		// 	send_msg(fds[i].fd, "PING localhost\n");
+		// }
 	}
 	return (SUCCESS);
 }
