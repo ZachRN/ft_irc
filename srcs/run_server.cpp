@@ -131,13 +131,6 @@ int run_server(Server server)
 				++nfds;
 				server.add_client(clientSocket);
 				std::cout << "New client connected #" << clientSocket << "." << std::endl;
-				send_msg(clientSocket, ":localhost 001 test :Welcome to the Internet Relay Network test!test@localhost\n");
-				send_msg(clientSocket, ":localhost 002 test :Your host is localhost, running version 1.0\n");
-				send_msg(clientSocket, ":localhost 003 test :This server was created sometime\n");
-				send_msg(clientSocket, ":localhost 004 test localhost 1.0 o o\n");
-				send_msg(clientSocket, ":localhost 375 test :- localhost Message of the Day - \n");
-				send_msg(clientSocket, ":localhost 372 test :- Welcome to the Internet Relay Network.\n");
-				send_msg(clientSocket, ":localhost 376 test :End of MOTD command\n");
 			}
 			else if (clientSocket != -1)
 			{

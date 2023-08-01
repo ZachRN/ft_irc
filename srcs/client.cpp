@@ -2,7 +2,7 @@
 #include "server.hpp"
 #include "channel.hpp"
 #include "utils.hpp"
-
+#include "run_server.hpp"
 //See Notes in Client.hpp for more information on commented out info.
 Client::Client(int fd, Server* server) :
 _server(server)
@@ -38,9 +38,28 @@ Client	&Client::operator=(const Client &copy)
 	return (*this);
 }
 
+void	Client::set_verified()
+{
+	if (get_verified() == true)
+		return ;
+	_verified = true;
+	send_msg(get_fd(), ":localhost 001 test :Welcome to the Internet Relay Network test!test@localhost\n");
+	send_msg(get_fd(), ":localhost 002 test :Your host is localhost, running version 1.0\n");
+	send_msg(get_fd(), ":localhost 003 test :This server was created sometime\n");
+	send_msg(get_fd(), ":localhost 004 test localhost 1.0 o o\n");
+	send_msg(get_fd(), ":localhost 375 test :- localhost Message of the Day - \n");
+	send_msg(get_fd(), ":localhost 372 test :- Welcome to the Internet Relay Network.\n");
+	send_msg(get_fd(), ":localhost 376 test :End of MOTD command\n");
+}
+
 int	Client::get_fd() const
 {
 	return (_fd);
+}
+
+std::string	Client::get_fullref() const
+{
+	return (_fullRef);
 }
 
 std::string	Client::get_nickname() const
@@ -55,8 +74,10 @@ int	Client::set_nickname(std::string nickname)
 	if (_server->nickname_in_use(nickname) == true)
 		return (NAME_ALREADY_INUSE);
 	_nickname = nickname;
-	if (_username != "")
-		_verified = true;
+	if (_username == "")
+		return (SUCCESS);
+	_fullRef = _nickname + "!" + _username;
+	set_verified();
 	return (SUCCESS);
 }
 
@@ -70,9 +91,16 @@ int	Client::set_username(std::string username)
 	if (name_syntax_check(username) != SUCCESS)
 		return (NAME_SYNTAX_INVALID);
 	_username = username;
-	if (_nickname != "")
-		_verified = true;
+	if (_nickname== "")
+		return (SUCCESS);
+	_fullRef = _nickname + "!" + _username;
+	set_verified();
 	return (SUCCESS);
+}
+
+bool		Client::get_verified() const
+{
+	return (_verified);
 }
 
 Server*		Client::get_server() const
@@ -99,8 +127,9 @@ int			Client::join_channel(std::string channelName, std::string password)
 		return (ALREADY_IN_CHANNEL);
 	if (serverchannelIt == serverchannelList->end())
 	{
-		if (_server->add_channel(channelName, *this) != SUCCESS)
-			return (FAILURE);
+		int error_code = _server->add_channel(channelName, *this);
+		if (error_code != SUCCESS)
+			return (error_code);
 		_channelList.push_back(&serverchannelList->find(channelName)->second);
 		return (SUCCESS);
 	}

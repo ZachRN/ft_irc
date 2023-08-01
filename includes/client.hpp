@@ -36,11 +36,14 @@ class Client
 		int			_fd;
 		std::string	_nickname;
 		std::string	_username;
+		std::string	_fullRef;
 		//This says if the setup process of their account is complete.
 		bool		_verified;
 		//std::time_t	_lastPong; Reinstate this later
 		Server		*_server;
 		std::vector<Channel*> _channelList;
+	private:
+		void		set_verified();
 	public:
 		Client(int fd, Server* server);
 		// Client(std::string nickname, std::string username);
@@ -54,6 +57,8 @@ class Client
 		int			set_nickname(std::string nickname);
 		std::string	get_username() const;
 		int			set_username(std::string username);
+		std::string	get_fullref() const;
+		bool		get_verified() const;
 		Server*		get_server() const;
 
 		//User Actions

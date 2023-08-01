@@ -1,5 +1,6 @@
 #include <iostream>
 #include "server.hpp"
+#include "input_process.hpp"
 
 static std::vector<std::string> parse_input(std::string input)
 {
@@ -8,6 +9,8 @@ static std::vector<std::string> parse_input(std::string input)
 	size_t pos = 0;
 	std::string token;
 
+	if (!input.empty())
+		input.erase(input.length()-2);
 	while ((pos = input.find(delimiter)) != std::string::npos) {
 	    token = input.substr(0, pos);
 		parsed.push_back(token);
@@ -25,13 +28,20 @@ void	print_vector(std::vector<std::string> parsed)
 
 int	input_process(int fd, char buffer[1024], Server *server)
 {
-	std::string input = buffer;
 	Client* client = server->get_client(fd);
-	(void)client;
+	if (client == nullptr)
+		return (NO_CLIENT_FOUND);
+	std::string input = buffer;
 	std::vector<std::string> parsed = parse_input(input);
 	std::vector<std::string>::const_iterator command = parsed.begin();
+	int returnvalue = SUCCESS;
+	if (*command == "NICK")
+		returnvalue = nickname(client, parsed, server);
+	// else if (*command == USER)
+		//handleUSER
+	// if ()
 	if (*command == "JOIN")
-		std::cout << "JOIN" << std::endl;
+		returnvalue = join(client, parsed, server);
 	// print_vector(parsed);
 	// std::cout << "VECTOR DONE" << std::endl;
 	return (SUCCESS);
