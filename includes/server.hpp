@@ -4,6 +4,10 @@
 # include <iostream>
 # include <string>
 # include <map>
+# include <netinet/in.h>
+# include "client.hpp"
+# include "channel.hpp"
+# include "config.hpp"
 
 # define SUCCESS 0
 # define FAILURE 1
@@ -13,24 +17,26 @@
 	as we see fit, possibly things such as timeout response
 	etc etc.
 */
-class Client;
-class Channel;
+// class Client;
+// class Channel;
 
 class Server
 {
 	private:
-		//probably dont need to change or have a server name
-		// std::string _name;
-		std::string _pass;
+		Config		_config;
+		std::string	_pass;
 		int			_port;
 		std::map<int, Client> _clientList;
 		std::map<std::string, Channel> _channelList;
+		int			_socket;
+		struct sockaddr_in	_serverAddr;
 	public:
 		//Initilization
 		Server(std::string pass, int port);
 		~Server();
 		
 		// regular variable functions
+		Config		get_config() const;
 		// std::string	get_name() const;
 		std::string	get_pass() const;
 		int			get_port() const;
@@ -52,11 +58,18 @@ class Server
 		bool	nickname_in_use(std::string nickname);
 		//End of Client Map Functions
 		
-		//Stat of Channel Map Functions
+		//Start of Channel Map Functions
 		std::map<std::string, Channel>* get_channelList();
 		Channel*	get_channel(std::string channelName);
 		int	add_channel(std::string channelName, Client &client);
 		int	remove_channel(std::string channelName);
+		//End of Channel Map Functions
+
+		//Start of Socket Functions
+		int		get_socket() const;
+		int		init_socket();
+		int		close_socket();
+		//End of Socket Functions
 };
 
 #endif

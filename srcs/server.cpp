@@ -1,8 +1,13 @@
 #include <iostream>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
 #include <utility> // std::make_pair
 #include "server.hpp"
 #include "client.hpp"
 #include "channel.hpp"
+#include "config.hpp"
 #include "utils.hpp"
 
 //Initilization
@@ -25,6 +30,11 @@ Server::~Server()
 // {
 // 	return (_name);
 // }
+
+Config	Server::get_config() const
+{
+	return (_config);
+}
 
 std::string	Server::get_pass() const
 {
@@ -62,7 +72,6 @@ Client* Server::get_client(std::string nickname)
 	}
 	return (nullptr);
 }
-
 
 //Current solution is to use enums instead of throwing for explicit error messages
 //this is primarily to save on resources
@@ -134,3 +143,36 @@ int	Server::remove_channel(std::string channelName)
 }
 
 //END OF CHANNEL MAP FUCNTIONS
+
+//Socket Functions
+int	Server::get_socket() const
+{
+	return (_socket);
+}
+
+int	Server::init_socket()
+{
+	// Create a socket
+	_socket = socket(AF_INET, SOCK_STREAM, 0);
+	if (_socket == -1)
+	{
+		std::cerr << "Error creating socket." << std::endl;
+		return (FAILURE);
+	}
+
+	// Set the socket to non-blocking mode
+	fcntl(_socket, F_SETFL, O_NONBLOCK);
+
+	// Bind the socket to the designated port
+	_serverAddr.sin_family = AF_INET;
+	_serverAddr.sin_addr.s_addr = INADDR_ANY;
+	_serverAddr.sin_port = htons(_port);
+	if (bind(_socket, (struct sockaddr*)&_serverAddr, sizeof(_serverAddr)) == -1)
+	{
+		std::cerr << "Error binding socket to port " << _port << std::endl;
+		close(_socket);
+		return (FAILURE);
+	}
+	return (SUCCESS);
+}
+//End of Socket Functions

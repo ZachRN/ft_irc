@@ -1,5 +1,9 @@
-server:bitchX
+// Separate key and value by "=" not including the double quotes, line must end with a newline.
+// Keys and values are trimmed
 
-
-//this config file will eventually contain what we want
-to parse in order to propegate information on the irc server
+host = f1r4s20.codam.nl
+servername = Za.Chat
+version = 1.0
+user_modes = o
+channel_modes = itkol
+max_clients = 4096

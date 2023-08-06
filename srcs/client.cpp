@@ -2,7 +2,7 @@
 #include "server.hpp"
 #include "channel.hpp"
 #include "utils.hpp"
-
+#include "run_server.hpp"
 //See Notes in Client.hpp for more information on commented out info.
 Client::Client(int fd, Server* server) :
 _server(server)
@@ -38,9 +38,28 @@ Client	&Client::operator=(const Client &copy)
 	return (*this);
 }
 
+void	Client::set_verified()
+{
+	if (get_verified() == true)
+		return ;
+	_verified = true;
+	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 001 " + get_nickname() + " :Welcome to the Internet Relay Network " + _fullRef + "\n"));
+	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 002 " + get_nickname() + " :Your host is " + _server->get_config().get_host() + ", running version " + _server->get_config().get_version() + "\n"));
+	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 003 " + get_nickname() + " :This server was created sometime\n"));
+	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 004 " + get_nickname() + " " + _server->get_config().get_host() + " 1.0 o o\n"));
+	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 375 " + get_nickname() + " :- localhost Message of the Day - \n"));
+	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 372 " + get_nickname() + " :- Welcome to the Internet Relay Network.\n"));
+	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 376 " + get_nickname() + " :End of MOTD command\n"));
+}
+
 int	Client::get_fd() const
 {
 	return (_fd);
+}
+
+std::string	Client::get_fullref() const
+{
+	return (_fullRef);
 }
 
 std::string	Client::get_nickname() const
@@ -55,8 +74,10 @@ int	Client::set_nickname(std::string nickname)
 	if (_server->nickname_in_use(nickname) == true)
 		return (NAME_ALREADY_INUSE);
 	_nickname = nickname;
-	if (_username != "")
-		_verified = true;
+	if (_username == "")
+		return (SUCCESS);
+	_fullRef = _nickname + "!" + _username + "@" + _server->get_config().get_serverName();
+	set_verified();
 	return (SUCCESS);
 }
 
@@ -70,9 +91,16 @@ int	Client::set_username(std::string username)
 	if (name_syntax_check(username) != SUCCESS)
 		return (NAME_SYNTAX_INVALID);
 	_username = username;
-	if (_nickname != "")
-		_verified = true;
+	if (_nickname== "")
+		return (SUCCESS);
+	_fullRef = _nickname + "!" + _username + "@" + _server->get_config().get_serverName();
+	set_verified();
 	return (SUCCESS);
+}
+
+bool		Client::get_verified() const
+{
+	return (_verified);
 }
 
 Server*		Client::get_server() const
@@ -99,8 +127,9 @@ int			Client::join_channel(std::string channelName, std::string password)
 		return (ALREADY_IN_CHANNEL);
 	if (serverchannelIt == serverchannelList->end())
 	{
-		if (_server->add_channel(channelName, *this) != SUCCESS)
-			return (FAILURE);
+		int error_code = _server->add_channel(channelName, *this);
+		if (error_code != SUCCESS)
+			return (error_code);
 		_channelList.push_back(&serverchannelList->find(channelName)->second);
 		return (SUCCESS);
 	}

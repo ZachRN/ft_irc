@@ -59,6 +59,11 @@ enum error_replies
 */
 enum command_replies
 {
+	RPL_WELCOME = 1, // "Welcome to the Internet Relay Network <nickname>" - Sent after a client registers with the server (numerics 001 to 004 must be sent before this is sent).
+	RPL_YOURHOST = 2, // "Your host is <servername>, running version <ver>" - Part of the post-registration greeting. Text varies widely.
+	RPL_CREATED = 3, // "This server was created <date>" - Part of the post-registration greeting. Text varies widely.
+	RPL_MYINFO = 4, // "<servername> <version> <available user modes> <available channel modes>" - Part of the post-registration greeting. Text varies widely.
+	RPL_BOUNCE = 5, // "Try server <server name>, port <port number>" - Sent by the server to a user to suggest an alternative server. This is often used when the connection is refused because the server is already full.
 	RPL_NONE = 300, // Dummy reply number. Not used.
 	RPL_USERHOST = 302, // ":*1<reply> *( " " <reply> )" - Reply format used by USERHOST to list replies to the query list. The reply string is composed as follows: reply = nickname [ "*" ] "=" ( "+" / "-" ) hostname
 	RPL_ISON = 303, // ":*1<nick> *( " " <nick> )" - Reply format used by ISON to list replies to the query list.
@@ -164,6 +169,14 @@ enum reserved_numerics
 	ERR_YOUWILLBEBANNED = 466,
 	ERR_BADCHANMASK = 476,
 	ERR_NOSERVICEHOST = 492
+};
+
+/*
+	These are custom reply codes that are not part of the RFC.
+*/
+enum custom_replies
+{
+	ERR_SERVERISFULL = 999, // ":Server is full"
 };
 
 #endif
