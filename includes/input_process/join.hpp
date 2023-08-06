@@ -1,5 +1,5 @@
-#ifndef JUMP_HPP
-# define JUMP_HPP
+#ifndef JOIN_HPP
+# define JOIN_HPP
 
 #include "server.hpp"
 

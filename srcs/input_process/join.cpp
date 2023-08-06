@@ -5,10 +5,7 @@
 static void send_join(Client* client, Channel* channel, std::string channel_name)
 {
 	std::vector<Client*> clientList = channel->get_clients();
-	std::string message = client->get_fullref();
-	message.append(":zach!gmail JOIN ");
-	message.append(channel_name);
-	message.append("\n");
+	std::string message = (":" + client->get_fullref() + " JOIN " + channel_name + "\n");
 	for (std::vector<Client*>::const_iterator to_send = clientList.begin(); to_send != clientList.end(); to_send++)
 	{
 		send_msg((*to_send)->get_fd(), message);

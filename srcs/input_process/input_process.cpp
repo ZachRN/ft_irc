@@ -35,14 +35,19 @@ int	input_process(int fd, char buffer[1024], Server *server)
 	std::vector<std::string> parsed = parse_input(input);
 	std::vector<std::string>::const_iterator command = parsed.begin();
 	int returnvalue = SUCCESS;
+	std::cout << input << std::endl;
 	if (*command == "NICK")
 		returnvalue = nickname(client, parsed, server);
-	// else if (*command == USER)
-		//handleUSER
-	// if ()
+	else if (*command == "USER")
+		returnvalue = username(client, parsed, server);
+	if (client->get_verified() == false)
+		return (FAILURE);
+	std::cout << "Verified, Can Join" << std::endl;
 	if (*command == "JOIN")
 		returnvalue = join(client, parsed, server);
+	else if (*command == "PART")
+		returnvalue = leave(client, parsed, server);
 	// print_vector(parsed);
 	// std::cout << "VECTOR DONE" << std::endl;
-	return (SUCCESS);
+	return (returnvalue);
 }

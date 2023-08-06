@@ -43,13 +43,13 @@ void	Client::set_verified()
 	if (get_verified() == true)
 		return ;
 	_verified = true;
-	send_msg(get_fd(), ":localhost 001 test :Welcome to the Internet Relay Network test!test@localhost\n");
-	send_msg(get_fd(), ":localhost 002 test :Your host is localhost, running version 1.0\n");
-	send_msg(get_fd(), ":localhost 003 test :This server was created sometime\n");
-	send_msg(get_fd(), ":localhost 004 test localhost 1.0 o o\n");
-	send_msg(get_fd(), ":localhost 375 test :- localhost Message of the Day - \n");
-	send_msg(get_fd(), ":localhost 372 test :- Welcome to the Internet Relay Network.\n");
-	send_msg(get_fd(), ":localhost 376 test :End of MOTD command\n");
+	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 001 " + get_nickname() + " :Welcome to the Internet Relay Network " + _fullRef + "\n"));
+	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 002 " + get_nickname() + " :Your host is " + _server->get_config().get_host() + ", running version " + _server->get_config().get_version() + "\n"));
+	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 003 " + get_nickname() + " :This server was created sometime\n"));
+	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 004 " + get_nickname() + " " + _server->get_config().get_host() + " 1.0 o o\n"));
+	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 375 " + get_nickname() + " :- localhost Message of the Day - \n"));
+	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 372 " + get_nickname() + " :- Welcome to the Internet Relay Network.\n"));
+	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 376 " + get_nickname() + " :End of MOTD command\n"));
 }
 
 int	Client::get_fd() const
@@ -76,7 +76,7 @@ int	Client::set_nickname(std::string nickname)
 	_nickname = nickname;
 	if (_username == "")
 		return (SUCCESS);
-	_fullRef = _nickname + "!" + _username;
+	_fullRef = _nickname + "!" + _username + "@" + _server->get_config().get_serverName();
 	set_verified();
 	return (SUCCESS);
 }
@@ -93,7 +93,7 @@ int	Client::set_username(std::string username)
 	_username = username;
 	if (_nickname== "")
 		return (SUCCESS);
-	_fullRef = _nickname + "!" + _username;
+	_fullRef = _nickname + "!" + _username + "@" + _server->get_config().get_serverName();
 	set_verified();
 	return (SUCCESS);
 }

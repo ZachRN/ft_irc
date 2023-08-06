@@ -2,8 +2,10 @@
 # define INPUT_PROCESS_HPP
 
 #include "server.hpp"
-#include "jump.hpp"
+#include "join.hpp"
 #include "nickname.hpp"
+#include "username.hpp"
+#include "leave.hpp"
 
 int	input_process(int fd, char buffer[1024], Server *server);
 
