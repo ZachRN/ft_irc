@@ -16,7 +16,8 @@ static void send_channel_msg(Client* client, std::vector<std::string> parsed_inp
 	std::vector<Client*> clientList = channel->get_clients();
 	for (std::vector<Client*>::const_iterator to_send = clientList.begin(); to_send != clientList.end(); to_send++)
 	{
-		send_msg((*to_send)->get_fd(), the_message);
+		if ((*to_send)->get_fd() != client->get_fd())
+			send_msg((*to_send)->get_fd(), the_message);
 	}
 }
 
@@ -26,7 +27,7 @@ int privmsg(Client* client, std::vector<std::string> parsed_input, Server *serve
 		return (FAILURE);
 	std::string channel_name = (*(++(parsed_input.begin()))).substr(1);
 	Channel*	channel = server->get_channel(channel_name);
-	unparsed = trim_white_space(unparsed);
+	unparsed = trim_whitespace(unparsed);
 	if (channel == nullptr)
 		return (NO_CHANNEL_FOUND);
 	if (parsed_input.size() < 3)
