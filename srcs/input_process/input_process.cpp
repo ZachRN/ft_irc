@@ -49,7 +49,7 @@ int	input_process(int fd, char buffer[1024], Server *server)
 	else if (*command == "PART")
 		returnvalue = leave(client, parsed, server);
 	else if (*command == "PRIVMSG")
-		returnvalue = privmsg(client, parsed, server);
+		returnvalue = privmsg(client, parsed, server, input);
 	// print_vector(parsed);
 	// std::cout << "VECTOR DONE" << std::endl;
 	return (returnvalue);
