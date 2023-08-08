@@ -92,8 +92,8 @@ std::unordered_map<std::string, std::string> read_config(std::string configPath)
 		size_t delimiterPos = line.find("=");
 		if (delimiterPos != std::string::npos)
 		{
-			std::string key = trim(line.substr(0, delimiterPos));
-			std::string value = trim(line.substr(delimiterPos + 1));
+			std::string key = trim_st(line.substr(0, delimiterPos));
+			std::string value = trim_st(line.substr(delimiterPos + 1));
 			configData[key] = value;
 		}
 	}
