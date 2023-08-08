@@ -11,7 +11,7 @@ static std::vector<std::string> parse_input(std::string input)
 	std::string token;
 
 	if (!input.empty())
-		input = trim_whitespace(input); //input.erase(input.length()-2);
+		input = trim_whitespace(input);
 	while ((pos = input.find(delimiter)) != std::string::npos) {
 		token = input.substr(0, pos);
 		parsed.push_back(token);
