@@ -39,7 +39,7 @@ int	input_process(int fd, char buffer[1024], Server *server)
 	if (*command == "NICK")
 		returnvalue = nickname(client, parsed, server);
 	else if (*command == "USER")
-		returnvalue = username(client, parsed, server);
+		returnvalue = username(client, parsed);
 	if (client->get_verified() == false)
 		return (FAILURE);
 	std::cout << "Verified, Can Join" << std::endl;
@@ -47,6 +47,8 @@ int	input_process(int fd, char buffer[1024], Server *server)
 		returnvalue = join(client, parsed, server);
 	else if (*command == "PART")
 		returnvalue = leave(client, parsed, server);
+	else if (*command == "PRIVMSG")
+		returnvalue = privmsg(client, parsed, server);
 	// print_vector(parsed);
 	// std::cout << "VECTOR DONE" << std::endl;
 	return (returnvalue);

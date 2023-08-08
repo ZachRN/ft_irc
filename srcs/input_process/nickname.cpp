@@ -15,6 +15,8 @@ static void send_nick(Client* client, Server* server, std::string old_name)
 
 int nickname(Client* client, std::vector<std::string> parsed_input, Server *server)
 {
+	if (parsed_input.size() == 1)
+		return (FAILURE);
 	std::string old_name = client->get_username();
 	// std::string channel_name = (*(++(parsed_input.begin()))).substr(1);
 	if (client->get_nickname() == "")

@@ -14,6 +14,8 @@ static void send_join(Client* client, Channel* channel, std::string channel_name
 
 int join(Client* client, std::vector<std::string> parsed_input, Server *server)
 {
+	if (parsed_input == 1)
+		return (FAILURE);
 	std::string channel_name = (*(++(parsed_input.begin()))).substr(1);
 	if (parsed_input.size() > 3)
 		return (FAILURE);

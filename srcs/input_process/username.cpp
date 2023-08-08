@@ -2,9 +2,10 @@
 #include "server.hpp"
 #include "run_server.hpp"
 
-int username(Client* client, std::vector<std::string> parsed_input, Server *server)
+int username(Client* client, std::vector<std::string> parsed_input)
 {
-	(void)server;
+	if (parsed_input.size() == 1)
+		return (FAILURE);
 	// std::string channel_name = (*(++(parsed_input.begin()))).substr(1);
 	if (client->get_username() == "")
 		return (client->set_username((*(++(parsed_input.begin())))));
