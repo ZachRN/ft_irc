@@ -1,6 +1,7 @@
 #include <iostream>
 #include "server.hpp"
 #include "input_process.hpp"
+#include "utils.hpp"
 
 static std::vector<std::string> parse_input(std::string input)
 {
@@ -10,11 +11,11 @@ static std::vector<std::string> parse_input(std::string input)
 	std::string token;
 
 	if (!input.empty())
-		input.erase(input.length()-2);
+		input = trim_whitespace(input); //input.erase(input.length()-2);
 	while ((pos = input.find(delimiter)) != std::string::npos) {
-	    token = input.substr(0, pos);
+		token = input.substr(0, pos);
 		parsed.push_back(token);
-	    input.erase(0, pos + delimiter.length());
+		input.erase(0, pos + delimiter.length());
 	}
 	parsed.push_back(input);
 	return (parsed);

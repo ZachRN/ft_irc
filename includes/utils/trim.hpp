@@ -3,6 +3,7 @@
 
 # include <iostream>
 
-std::string trim(std::string str);
+std::string trim_st(std::string str);
+std::string trim_whitespace(std::string str);
 
 #endif
