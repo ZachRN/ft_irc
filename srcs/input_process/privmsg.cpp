@@ -32,6 +32,8 @@ int privmsg(Client* client, std::vector<std::string> parsed_input, Server *serve
 		return (NO_CHANNEL_FOUND);
 	if (parsed_input.size() < 3)
 		return (FAILURE);
+	if (channel->client_in_channel(client->get_nickname()) == false)
+		return (FAILURE);
 	send_channel_msg(client, parsed_input, channel, unparsed);
 	return (SUCCESS);
 }
