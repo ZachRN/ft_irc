@@ -11,7 +11,7 @@ static std::vector<std::string> parse_input(std::string input)
 	std::string token;
 
 	if (!input.empty())
-		input = trim_whitespace(input); //input.erase(input.length()-2);
+		input = trim_whitespace(input);
 	while ((pos = input.find(delimiter)) != std::string::npos) {
 		token = input.substr(0, pos);
 		parsed.push_back(token);
@@ -37,18 +37,20 @@ int	input_process(int fd, char buffer[1024], Server *server)
 	std::vector<std::string>::const_iterator command = parsed.begin();
 	int returnvalue = SUCCESS;
 	std::cout << input << std::endl;
+	if (parsed.size() == 0)
+		return (FAILURE);
 	if (*command == "NICK")
 		returnvalue = nickname(client, parsed, server);
 	else if (*command == "USER")
 		returnvalue = username(client, parsed, server);
 	if (client->get_verified() == false)
 		return (FAILURE);
-	std::cout << "Verified, Can Join" << std::endl;
 	if (*command == "JOIN")
 		returnvalue = join(client, parsed, server);
 	else if (*command == "PART")
 		returnvalue = leave(client, parsed, server);
-	// print_vector(parsed);
-	// std::cout << "VECTOR DONE" << std::endl;
+	print_vector(parsed);
+	std::cout << "VECTOR DONE" << std::endl;
 	return (returnvalue);
+	// return (0);
 }

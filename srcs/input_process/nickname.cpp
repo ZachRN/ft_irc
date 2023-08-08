@@ -9,6 +9,7 @@ static void send_nick(Client* client, Server* server, std::string old_name)
 
 	for (std::map<int, Client>::iterator to_send = clientList->begin(); to_send != clientList->end(); to_send++)
 	{
+		std::cout << "Sending to: " << to_send->second.get_nickname() << std::endl;
 		send_msg(to_send->second.get_fd(), message);
 	}
 }
@@ -21,6 +22,7 @@ int nickname(Client* client, std::vector<std::string> parsed_input, Server *serv
 		return (client->set_nickname((*(++(parsed_input.begin())))));
 	if (parsed_input.size() > 2)
 		return (FAILURE);
+	client->set_nickname((*(++(parsed_input.begin()))));
 	send_nick(client, server, old_name);
 	return (SUCCESS);
 }

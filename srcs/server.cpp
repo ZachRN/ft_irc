@@ -4,10 +4,11 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <utility> // std::make_pair
-#include "server.hpp"
 #include "client.hpp"
 #include "channel.hpp"
 #include "config.hpp"
+#include "leave.hpp"
+#include "server.hpp"
 #include "utils.hpp"
 
 //Initilization
@@ -92,9 +93,19 @@ int	Server::remove_client(int fd)
 	if (client == _clientList.end())
 		return (NO_CLIENT_FOUND);
 	//Remove Client From Every Channel
-	// std::vector<Channel*> channelList = client->second.get_channelList();
-	// for (std::vector<Channel*>::iterator it = channelList.begin(); it != channelList.end();)
-	// 		client->second.leave_channel((*it)->get_name());
+	std::vector<Channel*> channelList = client->second.get_channelList();
+	for (std::vector<Channel*>::iterator it = channelList.begin(); it != channelList.end(); ++it)
+	{
+		std::string channelName = (*it)->get_name();
+		client->second.leave_channel((*it)->get_name());
+		// If channel still exists, send a PART message to all clients in the channel
+		if (get_channel(channelName) == nullptr)
+		{
+			send_leave(&client->second, nullptr, "#" + channelName);
+			continue ;
+		}
+		send_leave(&client->second, (*it), "#" + channelName);
+	}
 	_clientList.erase(client);
 	return (SUCCESS);
 }

@@ -350,14 +350,17 @@ int	remove_client_auto_leave_channel_tests()
 	Channel* channeltwo = ircServ.get_channel("two");
 	Channel* channelthree = ircServ.get_channel("three");
 	Channel* channelfour = ircServ.get_channel("four");
-	if ((channelone->client_is_owner(mike->get_nickname()) && channeltwo->client_is_owner(mike->get_nickname()) && channelthree->client_is_owner(mike->get_nickname()) && channelfour->client_is_owner(mike->get_nickname())))
+	if ((!channelone->client_is_owner(mike->get_nickname()) &&
+		!channeltwo->client_is_owner(mike->get_nickname()) &&
+		!channelthree->client_is_owner(mike->get_nickname()) &&
+		!channelfour->client_is_owner(mike->get_nickname())))
 	{
 		std::cout << "ERROR: Client Two did not become owner of all four channels after remove_client(one)." << std::endl;
 		return (FAILURE);
 	}
 	else
 		std::cout << "SUCCESS: Client two became owner of all channels owned by one after remove_client(one)." << std::endl;
-	if (!(channelone->client_in_channel("Zach") || channeltwo->client_in_channel("Zach") || channelthree->client_in_channel("Zach") || channelfour->client_in_channel("Zach")))
+	if ((channelone->client_in_channel("Zach") || channeltwo->client_in_channel("Zach") || channelthree->client_in_channel("Zach") || channelfour->client_in_channel("Zach")))
 	{
 		std::cout << "ERROR: Client one still in one of the channels." << std::endl;
 		return (FAILURE);
