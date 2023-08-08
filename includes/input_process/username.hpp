@@ -3,6 +3,6 @@
 
 #include "server.hpp"
 
-int username(Client* client, std::vector<std::string> parsed_input, Server *server);
+int username(Client* client, std::vector<std::string> parsed_input);
 
 #endif
