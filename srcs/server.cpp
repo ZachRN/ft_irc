@@ -96,10 +96,15 @@ int	Server::remove_client(int fd)
 	std::vector<Channel*> channelList = client->second.get_channelList();
 	for (std::vector<Channel*>::iterator it = channelList.begin(); it != channelList.end(); ++it)
 	{
+		std::string channelName = (*it)->get_name();
 		client->second.leave_channel((*it)->get_name());
 		// If channel still exists, send a PART message to all clients in the channel
-		if (get_channel((*it)->get_name()) != nullptr)
-			send_leave(&client->second, (*it), "#" + (*it)->get_name());
+		if (get_channel(channelName) == nullptr)
+		{
+			send_leave(&client->second, nullptr, "#" + channelName);
+			continue ;
+		}
+		send_leave(&client->second, (*it), "#" + channelName);
 	}
 	_clientList.erase(client);
 	return (SUCCESS);
