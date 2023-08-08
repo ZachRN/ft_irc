@@ -6,7 +6,8 @@ static void send_nick(Client* client, Server* server, std::string old_name)
 {
 	std::map<int, Client>* clientList = server->get_clientList();
 	std::string message = ":" + server->get_config().get_serverName() + " " + old_name + " " + client->get_nickname() + "\n"; 
-
+	
+	std::cout << message << std::endl;
 	for (std::map<int, Client>::iterator to_send = clientList->begin(); to_send != clientList->end(); to_send++)
 	{
 		send_msg(to_send->second.get_fd(), message);
