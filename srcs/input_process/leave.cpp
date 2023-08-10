@@ -21,6 +21,8 @@ void send_leave(Client* client, Channel* channel, std::string channel_name)
 
 int leave(Client* client, std::vector<std::string> parsed_input, Server *server)
 {
+	if (parsed_input.size() == 1)
+		return (FAILURE);
 	std::string channel_name = (*(++(parsed_input.begin()))).substr(1);
 	if (parsed_input.size() > 4)
 		return (FAILURE);
