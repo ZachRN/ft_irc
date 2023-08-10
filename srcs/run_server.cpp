@@ -109,7 +109,7 @@ int run_server(Server server)
 	while (true)
 	{
 		// Use poll() to monitor sockets for I/O events
-		int result = poll(fds, nfds, 5000);
+		int result = poll(fds, nfds, 0);
 
 		if (result == -1)
 		{
@@ -123,8 +123,11 @@ int run_server(Server server)
 			int clientSocket = accept(server.get_socket(), (struct sockaddr*)&clientAddr, &clientAddrLen);
 			if (clientSocket != -1 && nfds < server.get_config().get_maxClients() + 1)
 			{
-				//fcntl(clientSocket, F_SETFL, O_NONBLOCK); // Set the client socket to non-blocking mode
-
+				if (fcntl(clientSocket, F_SETFL, O_NONBLOCK) == -1) // Set the client socket to non-blocking mode
+				{
+					std::cerr << "Could not set socket to non-blocking." << std::endl;
+					return (FAILURE);
+				}
 				client_sockets.push_back(clientSocket);
 				fds[nfds].fd = clientSocket;
 				fds[nfds].events = POLLIN; // Check for incoming data on the client socket
@@ -149,5 +152,6 @@ int run_server(Server server)
 		// 	send_msg(fds[i].fd, "PING localhost\n");
 		// }
 	}
+
 	return (SUCCESS);
 }

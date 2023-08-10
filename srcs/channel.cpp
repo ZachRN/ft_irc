@@ -175,8 +175,8 @@ int		Channel::add_operator(Client* to_promote, Client* promoter)
 {
 	if (client_is_operator(to_promote->get_nickname()))
 		return (ALREADY_OPERATOR);
-	if (!(client_is_operator(promoter->get_nickname())))
-		return (REQUIRED_OPERATOR);
+	if (!(client_is_operator(promoter->get_nickname()) || client_is_owner(promoter->get_nickname())))
+        return (REQUIRED_OPERATOR);
 	_operators.push_back(to_promote);
 	return (SUCCESS);
 }
