@@ -99,6 +99,9 @@ class Channel
 		bool	remove_client(Client* client);
 		int		leave_channel(Client* client);
 
+		// Send message to everyone in the channel
+		void	send_channel_msg(std::string message);
+
 		//OPERATOR ONLY COMMANDS
 		int		set_topic(std::string topic, Client* client);
 		int		kick(Client* to_kick, Client* kicker);

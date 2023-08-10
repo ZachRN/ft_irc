@@ -19,28 +19,25 @@ static std::string clients_string(Channel* channel, std::vector<Client*> clientL
 	return (all_clients);
 }
 
-static void send_channel_clientlist(Channel* channel)
+static void send_channel_clientlist(Channel* channel, Client* to_send)
 {
 	std::vector<Client*> clientList = channel->get_clients();
-	for (std::vector<Client*>::const_iterator to_send = clientList.begin(); to_send != clientList.end(); to_send++)
-	{
-		std::string message = (":" + (*to_send)->get_server()->get_config().get_host() +
-							" 353 " +
-							(*to_send)->get_nickname() +
-							" @ #" +
-							channel->get_name() +
-							" :" +
-							clients_string(channel, clientList) +
-							"\n");
-		send_msg((*to_send)->get_fd(), message);
-		message = (":" + (*to_send)->get_server()->get_config().get_host() +
-							" 366 " +
-							(*to_send)->get_nickname() +
-							" #" +
-							channel->get_name() +
-							" :End of /NAMES list.\n");
-		send_msg((*to_send)->get_fd(), message);
-	}
+	std::string message = (":" + to_send->get_server()->get_config().get_host() +
+						" 353 " +
+						to_send->get_nickname() +
+						" @ #" +
+						channel->get_name() +
+						" :" +
+						clients_string(channel, clientList) +
+						"\n");
+	send_msg(to_send->get_fd(), message);
+	message = (":" + to_send->get_server()->get_config().get_host() +
+						" 366 " +
+						to_send->get_nickname() +
+						" #" +
+						channel->get_name() +
+						" :End of /NAMES list.\n");
+	send_msg(to_send->get_fd(), message);
 }
 
 static void send_join(Client* client, Channel* channel, std::string channel_name)
@@ -68,7 +65,7 @@ int join(Client* client, std::vector<std::string> parsed_input, Server *server)
 	if (channel == nullptr)
 		return (NO_CHANNEL_FOUND);
 	send_join(client, channel, (*(++(parsed_input.begin()))));
-	send_channel_clientlist(client->get_channel(channel_name));
+	send_channel_clientlist(client->get_channel(channel_name), client);
 	return (SUCCESS);
 }
 
