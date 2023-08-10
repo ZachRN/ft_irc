@@ -663,7 +663,7 @@ int	invite_tests()
 	patrick->set_nickname("Patrick");
 	zach->join_channel("Zachs_Home", "");
 	Channel* channel = ircServ.get_channel("Zachs_Home");
-	if (channel->set_invite(zach, true) != SUCCESS)
+	if (channel->set_invite(zach) != SUCCESS)
 	{
 		std::cout << "ERROR: OWNER UNABLE TO SET_INVITE" << std::endl;
 		return (FAILURE);
