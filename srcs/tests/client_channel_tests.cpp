@@ -389,6 +389,7 @@ int	add_remove_operator()
 	frans->set_nickname("Frans");
 	patrick->set_nickname("Patrick");
 	zach->join_channel("Zachs_Home", "");
+	mike->join_channel("Zachs_Home", "");
 	Channel* channel = ircServ.get_channel("Zachs_Home");
 	if (channel->add_operator(mike, zach) != SUCCESS)
 	{
@@ -419,6 +420,7 @@ int	add_remove_operator()
 	else
 		std::cout << "SUCCESS: NON-OPERATOR UNABLE TO PROMOTE OPERATOR" << std::endl;
 	channel->add_operator(mike, zach);
+	frans->join_channel("Zachs_Home", "");
 	if (channel->add_operator(frans, mike) != SUCCESS)
 	{
 		std::cout << "ERROR: OPERATOR UNABLE TO ADD OPERATOR" << std::endl;

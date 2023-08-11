@@ -15,6 +15,7 @@ _owner(creator)
 	_password = "";
 	_invite = false;
 	_userlimit = 4096;
+	_limitEnabled = false;
 	_clients.push_back(creator);
 	_operators.push_back(creator);
 }
@@ -39,6 +40,7 @@ Channel	&Channel::operator=(const Channel &copy)
 	_password = copy._password;
 	_invite = copy._invite;
 	_userlimit = copy._userlimit;
+	_limitEnabled = copy._limitEnabled;
 	_clients = copy._clients;
 	_operators = copy._operators;
 	_server = copy._server;
@@ -183,8 +185,11 @@ int		Channel::add_operator(Client* to_promote, Client* promoter)
 {
 	if (client_is_operator(to_promote->get_nickname()))
 		return (ALREADY_OPERATOR);
-	if (!(client_is_operator(promoter->get_nickname())))
-		return (REQUIRED_OPERATOR);
+	if (!client_is_owner(promoter->get_nickname()))
+	{
+		if (!client_is_operator(promoter->get_nickname()))
+			return (REQUIRED_OPERATOR);
+	}
 	if (!client_in_channel(to_promote->get_nickname()))
 		return (NOT_IN_CHANNEL);
 	_operators.push_back(to_promote);
@@ -266,22 +271,35 @@ size_t		Channel::get_limit() const
 	return (_userlimit);
 }
 
-int			Channel::set_limit(size_t limit, Client* client)
+bool		Channel::get_limit_enabled() const
+{
+	return (_limitEnabled);
+}
+
+int			Channel::set_limit(int limit, Client* client)
 {
 	if (!(client_is_operator(client->get_nickname())))
 		return (REQUIRED_OPERATOR);
 	//REPLACE WITH SERVERCONFIG
-	if (limit > 4096)
+	if (limit >= client->get_server()->get_config().get_maxClients())
 		return (TOO_HIGH_OF_LIMIT);
 	_userlimit = limit;
 	return (SUCCESS);
 }
 
-int			Channel::set_topic_operator(Client* client)
+int		Channel::set_topic_operator(Client* client)
 {
 	if (!client_is_operator(client->get_nickname()))
 		return (REQUIRED_OPERATOR);
 	_topic_operator = !_topic_operator;
+	return (SUCCESS);
+}
+
+int		Channel::set_flip_limit_enabled(Client* client)
+{
+	if (!client_is_operator(client->get_nickname()))
+		return (REQUIRED_OPERATOR);
+	_limitEnabled = !_limitEnabled;
 	return (SUCCESS);
 }
 
@@ -291,7 +309,9 @@ int			Channel::send_all_message(std::string message)
 	{
 		send_msg((*to_send)->get_fd(), message);
 	}
+	return (SUCCESS);
 }
+
 //Setting Limit to 0 could fix it, but not sure, ask frans
 // int		Channel::set_userlimit(size_t limit, Client* client)
 // {
