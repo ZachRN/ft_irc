@@ -5,6 +5,7 @@
 # define FAILURE 1
 
 # include "name_syntax_check.hpp"
+# include "split.hpp"
 # include "trim.hpp"
 
 #endif

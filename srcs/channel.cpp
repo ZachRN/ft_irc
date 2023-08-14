@@ -1,6 +1,7 @@
 #include <vector>
 #include "channel.hpp"
 #include "client.hpp"
+#include "run_server.hpp"
 #include "server.hpp"
 #include "utils.hpp"
 #include "run_server.hpp"
@@ -155,6 +156,13 @@ int		Channel::leave_channel(Client* client)
 		Client *to_promote = channelclientList.front();
 		_owner = to_promote;
 		add_operator(to_promote, to_promote);
+		send_all_message(":" +
+						_server->get_config().get_host() +
+						" MODE #" +
+						_name +
+						" +o " +
+						to_promote->get_nickname() +
+						"\n");
 		return (SUCCESS);
 	}
 	_server->remove_channel(get_name());
@@ -186,7 +194,7 @@ int		Channel::add_operator(Client* to_promote, Client* promoter)
 	if (client_is_operator(to_promote->get_nickname()))
 		return (ALREADY_OPERATOR);
 	if (!(client_is_operator(promoter->get_nickname()) || client_is_owner(promoter->get_nickname())))
-        return (REQUIRED_OPERATOR);
+		return (REQUIRED_OPERATOR);
 	_operators.push_back(to_promote);
 	return (SUCCESS);
 }

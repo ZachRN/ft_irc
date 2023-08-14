@@ -117,7 +117,8 @@ class Channel
 		int		set_limit(int limit, Client* client);
 		int		set_topic_operator(Client* client);
 		int		set_flip_limit_enabled(Client* client);
-		
+
+		// Send message to all clients in channel
 		int		send_all_message(std::string message);
 };
 
