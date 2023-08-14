@@ -7,6 +7,7 @@
 #include "username.hpp"
 #include "leave.hpp"
 #include "privmsg.hpp"
+#include "mode.hpp"
 
 int	input_process(int fd, char buffer[1024], Server *server);
 

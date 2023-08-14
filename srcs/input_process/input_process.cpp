@@ -51,9 +51,8 @@ int	input_process(int fd, char buffer[1024], Server *server)
 		returnvalue = leave(client, parsed, server);
 	else if (*command == "PRIVMSG")
 		returnvalue = privmsg(client, parsed, server, input);
-	// print_vector(parsed);
-	// std::cout << "VECTOR DONE" << std::endl;
-	print_vector(parsed);
+	else if (*command == "MODE")
+		returnvalue = mode(client, parsed, server);
 	return (returnvalue);
 	// return (0);
 }

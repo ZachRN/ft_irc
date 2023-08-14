@@ -9,14 +9,7 @@ void send_leave(Client* client, Channel* channel, std::string channel_name)
 	
 	if (channel == nullptr)
 		return ;
-	std::vector<Client*> clientList = channel->get_clients();
-	if (!clientList.empty())
-	{
-		for (std::vector<Client*>::const_iterator to_send = clientList.begin(); to_send != clientList.end(); to_send++)
-		{
-			send_msg((*to_send)->get_fd(), message);
-		}
-	}
+	channel->send_all_message(message);
 }
 
 int leave(Client* client, std::vector<std::string> parsed_input, Server *server)
