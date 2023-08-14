@@ -1,6 +1,8 @@
 #include <map>
+#include <vector>
 #include "server.hpp"
 #include "run_server.hpp"
+#include "utils.hpp"
 
 static std::string clients_string(Channel* channel, std::vector<Client*> clientList)
 {
@@ -65,12 +67,36 @@ int join(Client* client, std::vector<std::string> parsed_input, Server *server)
 	if (channel == nullptr)
 		return (NO_CHANNEL_FOUND);
 	send_join(client, channel, (*(++(parsed_input.begin()))));
-	send_channel_clientlist(client->get_channel(channel_name), client);
+	send_channel_clientlist(client->get_channel(channel_name));
 	return (SUCCESS);
 }
 
+// Join multiple channels
+int join(Client* client, std::vector<std::string> parsed_input, Server *server)
+{
+	if (parsed_input.size() == 1)
+		return (FAILURE);
+	// std::string channel_name = (*(++(parsed_input.begin()))).substr(1);
+	std::vector<std::string> channel_names = split((*(++(parsed_input.begin()))).substr(1), ',');
+	if (parsed_input.size() > 3)
+		return (FAILURE);
+	// std::string password = (parsed_input.size() == 3) ? *(parsed_input.begin() + 2) : "";
+	std::vector<std::string> passwords = (parsed_input.size() == 3) ? split(*(parsed_input.begin() + 2), ',') : std::vector<std::string>{""};
 
-// [][][][][]
-// [ab][ac][ad][ag]
-// [ac]
-// [c...]
+	for (const std::string& channel_name : channel_names)
+	{
+		int retvalue;
+		if (!server->get_channel(channel_name)->get_password().empty())
+			
+		else
+			retvalue = client->join_channel(channel_name, "");
+	}
+	if (retvalue != SUCCESS)
+		return (retvalue);
+	Channel*	channel = server->get_channel(channel_name);
+	if (channel == nullptr)
+		return (NO_CHANNEL_FOUND);
+	send_join(client, channel, (*(++(parsed_input.begin()))));
+	send_channel_clientlist(client->get_channel(channel_name), client);
+	return (SUCCESS);
+}
