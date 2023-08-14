@@ -99,12 +99,11 @@ int	Server::remove_client(int fd)
 		std::string channelName = (*it)->get_name();
 		client->second.leave_channel((*it)->get_name());
 		// If channel still exists, send a PART message to all clients in the channel
-		if (get_channel(channelName) == nullptr)
+		if (get_channel(channelName) != nullptr)
 		{
-			send_leave(&client->second, nullptr, "#" + channelName);
-			continue ;
+			std::string message = (":" + client->second.get_fullref() + " PART " + channelName + "\n");
+			get_channel(channelName)->send_all_message(message);
 		}
-		send_leave(&client->second, (*it), "#" + channelName);
 	}
 	_clientList.erase(client);
 	return (SUCCESS);
