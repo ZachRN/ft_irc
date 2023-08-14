@@ -69,6 +69,7 @@ class Channel
 	private:
 		std::string	_name;
 		std::string	_topic;
+		bool		_topic_operator;
 		std::string	_password;
 		bool		_invite;
 		Server*		_server;
@@ -77,6 +78,7 @@ class Channel
 		std::vector<Client*>	_invitelist;
 		Client*		_owner;
 		size_t		_userlimit;
+		bool		_limitEnabled;
 	public:
 		Channel(std::string name, Client* creator, Server *server);
 		Channel(const Channel &copy);
@@ -86,6 +88,7 @@ class Channel
 		//name
 		std::string				get_name() const;
 		std::string				get_topic() const;
+		bool					get_topic_operator() const;
 		std::string				get_password() const;
 		bool					get_invite() const;
 		std::vector<Client*>	get_clients() const;
@@ -110,11 +113,15 @@ class Channel
 		int		invite(Client* invitee, Client* inviter);
 		int		remove_invite(Client* invitee, Client* inviter);
 		bool	is_invited(std::string nickname);
-		int		set_invite(Client* client, bool mode);
+		int		set_invite(Client* client);
 		int		set_password(std::string password, Client* client);
 		size_t	get_limit() const;
-		int		set_limit(size_t limit, Client* client);
+		bool	get_limit_enabled() const;
+		int		set_limit(int limit, Client* client);
+		int		set_topic_operator(Client* client);
+		int		set_flip_limit_enabled(Client* client);
 		
+		int		send_all_message(std::string message);
 };
 
 #endif

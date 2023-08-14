@@ -4,6 +4,7 @@
 #include "run_server.hpp"
 #include "server.hpp"
 #include "utils.hpp"
+#include "run_server.hpp"
 
 Channel::Channel(std::string name, Client* creator, Server* server) :
 _server(server),
@@ -11,9 +12,11 @@ _owner(creator)
 {
 	_name = name;
 	_topic = "";
+	_topic_operator = true;
 	_password = "";
 	_invite = false;
 	_userlimit = 4096;
+	_limitEnabled = false;
 	_clients.push_back(creator);
 	_operators.push_back(creator);
 }
@@ -34,9 +37,11 @@ Channel	&Channel::operator=(const Channel &copy)
 {
 	_name = copy._name;
 	_topic = copy._topic;
+	_topic_operator = copy._topic_operator;
 	_password = copy._password;
 	_invite = copy._invite;
 	_userlimit = copy._userlimit;
+	_limitEnabled = copy._limitEnabled;
 	_clients = copy._clients;
 	_operators = copy._operators;
 	_server = copy._server;
@@ -53,6 +58,11 @@ std::string	Channel::get_name() const
 std::string	Channel::get_topic() const
 {
 	return (_topic);
+}
+
+bool		Channel::get_topic_operator() const
+{
+	return (_topic_operator);
 }
 
 std::string	Channel::get_password() const
@@ -223,6 +233,7 @@ int		Channel::invite(Client* invitee, Client* inviter)
 	_invitelist.push_back(invitee);
 	return (SUCCESS);
 }
+
 int		Channel::remove_invite(Client* invitee, Client* inviter)
 {
 	if (!(client_is_operator(inviter->get_nickname())) && invitee != inviter)
@@ -248,11 +259,11 @@ bool	Channel::is_invited(std::string nickname)
 	return (false);
 }
 
-int		Channel::set_invite(Client* client, bool mode)
+int		Channel::set_invite(Client* client)
 {
 	if (!client_is_operator(client->get_nickname()))
 		return (REQUIRED_OPERATOR);
-	_invite = mode;
+	_invite = !_invite;
 	return (SUCCESS);	
 }
 
@@ -271,14 +282,44 @@ size_t		Channel::get_limit() const
 	return (_userlimit);
 }
 
-int			Channel::set_limit(size_t limit, Client* client)
+bool		Channel::get_limit_enabled() const
+{
+	return (_limitEnabled);
+}
+
+int			Channel::set_limit(int limit, Client* client)
 {
 	if (!(client_is_operator(client->get_nickname())))
 		return (REQUIRED_OPERATOR);
 	//REPLACE WITH SERVERCONFIG
-	if (limit > 4096)
+	if (limit >= client->get_server()->get_config().get_maxClients())
 		return (TOO_HIGH_OF_LIMIT);
 	_userlimit = limit;
+	return (SUCCESS);
+}
+
+int		Channel::set_topic_operator(Client* client)
+{
+	if (!client_is_operator(client->get_nickname()))
+		return (REQUIRED_OPERATOR);
+	_topic_operator = !_topic_operator;
+	return (SUCCESS);
+}
+
+int		Channel::set_flip_limit_enabled(Client* client)
+{
+	if (!client_is_operator(client->get_nickname()))
+		return (REQUIRED_OPERATOR);
+	_limitEnabled = !_limitEnabled;
+	return (SUCCESS);
+}
+
+int			Channel::send_all_message(std::string message)
+{
+	for (std::vector<Client*>::const_iterator to_send = _clients.begin(); to_send != _clients.end(); to_send++)
+	{
+		send_msg((*to_send)->get_fd(), message);
+	}
 	return (SUCCESS);
 }
 
