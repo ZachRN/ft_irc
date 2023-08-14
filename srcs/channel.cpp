@@ -156,7 +156,7 @@ int		Channel::leave_channel(Client* client)
 		Client *to_promote = channelclientList.front();
 		_owner = to_promote;
 		add_operator(to_promote, to_promote);
-		send_channel_msg(":" +
+		send_all_message(":" +
 						_server->get_config().get_host() +
 						" MODE #" +
 						_name +
@@ -167,14 +167,6 @@ int		Channel::leave_channel(Client* client)
 	}
 	_server->remove_channel(get_name());
 	return (SUCCESS);
-}
-
-void	Channel::send_channel_msg(std::string message)
-{
-	for (std::vector<Client*>::const_iterator client = _clients.begin(); client != _clients.end(); client++)
-	{
-		send_msg((*client)->get_fd(), message);
-	}
 }
 
 int		Channel::set_topic(std::string topic, Client* client)
