@@ -53,6 +53,8 @@ int	input_process(int fd, char buffer[1024], Server *server)
 		returnvalue = privmsg(client, parsed, server, input);
 	else if (*command == "MODE")
 		returnvalue = mode(client, parsed, server);
+	else if (*command == "QUIT")
+		returnvalue = quit(client, server);
 	return (returnvalue);
 	// return (0);
 }
