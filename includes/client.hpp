@@ -7,6 +7,9 @@
 # include <vector>
 // # include "server.hpp"
 
+# define SUCCESS 0
+# define FAILURE 1
+
 enum ClientErrors{
 	FD_IN_USE = 1,
 	NO_CLIENT_FOUND,
@@ -39,8 +42,8 @@ class Client
 		std::string	_fullRef;
 		//This says if the setup process of their account is complete.
 		bool		_verified;
-		//std::time_t	_lastPong; Reinstate this later
 		Server		*_server;
+		std::time_t	_lastPong;
 		std::vector<Channel*> _channelList;
 	private:
 		void		set_verified();
@@ -60,6 +63,8 @@ class Client
 		std::string	get_fullref() const;
 		bool		get_verified() const;
 		Server*		get_server() const;
+		std::time_t	get_lastPong() const;
+		void		set_lastPong(std::time_t lastPong);
 
 		//User Actions
 		int			join_channel(std::string channelName, std::string password);

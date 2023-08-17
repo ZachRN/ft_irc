@@ -12,6 +12,7 @@ _server(server)
 	_username = "";
 	_verified = false;
 	_channelList = std::vector<Channel*>();
+	_lastPong = std::time(nullptr);
 	// std::cout << "bitch" << std::endl;
 }
 
@@ -34,6 +35,7 @@ Client	&Client::operator=(const Client &copy)
 	_nickname = copy._nickname;
 	_username = copy._username;
 	_server = copy._server;
+	_lastPong = copy._lastPong;
 	_channelList = copy._channelList;
 	return (*this);
 }
@@ -106,6 +108,16 @@ bool		Client::get_verified() const
 Server*		Client::get_server() const
 {
 	return (_server);
+}
+
+std::time_t	Client::get_lastPong() const
+{
+	return (_lastPong);
+}
+
+void		Client::set_lastPong(std::time_t lastPong)
+{
+	_lastPong = lastPong;
 }
 
 static int	can_join_channel(Channel* channel, std::string password, std::string nickname)

@@ -1,3 +1,4 @@
+#include <ctime>
 #include <fcntl.h>
 #include <iostream>
 #include <poll.h>
@@ -22,7 +23,14 @@ void ping_all_clients(Server server)
 	std::map<int, Client>::iterator it = server.get_clientList()->begin();
 	while (it != server.get_clientList()->end())
 	{
-		send(it->first, "PING :irc.localhost\n", 20, 0);
+		if ((*it).second.get_lastPong() + 60 < std::time(nullptr))
+		{
+			std::cout << "Client " << (*it).second.get_nickname() << " timed out." << std::endl;
+			close((*it).second.get_fd());
+			it = server.get_clientList()->erase(it);
+		}
+		else if ((*it).second.get_verified() == true)
+			send_msg((*it).second.get_fd(), "PING " + server.get_config().get_serverName() + "\r\n");
 		++it;
 	}
 }
@@ -109,7 +117,7 @@ int run_server(Server server)
 	while (true)
 	{
 		// Use poll() to monitor sockets for I/O events
-		int result = poll(fds, nfds, 0);
+		int result = poll(fds, nfds, 1000);
 
 		if (result == -1)
 		{
@@ -147,10 +155,8 @@ int run_server(Server server)
 			}
 		}
 		nfds = check_client_sockets(&server, nfds, fds);
-		// for (int i = 1; i < nfds; ++i)
-		// {
-		// 	send_msg(fds[i].fd, "PING localhost\n");
-		// }
+		if (std::time(nullptr) % 5 == 0)
+			ping_all_clients(server);
 	}
 
 	return (SUCCESS);

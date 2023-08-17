@@ -8,6 +8,8 @@
 #include "leave.hpp"
 #include "privmsg.hpp"
 #include "mode.hpp"
+#include "ping.hpp"
+#include "pong.hpp"
 
 int	input_process(int fd, char buffer[1024], Server *server);
 

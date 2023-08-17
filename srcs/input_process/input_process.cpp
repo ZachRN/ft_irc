@@ -53,6 +53,10 @@ int	input_process(int fd, char buffer[1024], Server *server)
 		returnvalue = privmsg(client, parsed, server, input);
 	else if (*command == "MODE")
 		returnvalue = mode(client, parsed, server);
+	else if (*command == "PING")
+		returnvalue = ping(client, parsed, server, input);
+	else if (*command == "PONG")
+		returnvalue = pong(client);
 	return (returnvalue);
 	// return (0);
 }
