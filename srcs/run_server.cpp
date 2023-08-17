@@ -76,6 +76,7 @@ int check_client_sockets(Server *server, int nfds, struct pollfd *fds)
 				if (errno != EAGAIN && errno != EWOULDBLOCK)
 				{
 					std::cerr << "Error reading data from client " << fds[i].fd << ": " << strerror(errno) << std::endl;
+					server->remove_client(fds[i].fd);
 					close(fds[i].fd);
 					// Shift the rest of the clients in the array to remove the disconnected client
 					for (int j = i; j < nfds - 1; ++j)
