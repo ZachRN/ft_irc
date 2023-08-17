@@ -101,7 +101,7 @@ int	Server::remove_client(int fd)
 		// If channel still exists, send a PART message to all clients in the channel
 		if (get_channel(channelName) != nullptr)
 		{
-			std::string message = (":" + client->second.get_fullref() + " PART " + channelName + "\n");
+			std::string message = (":" + client->second.get_fullref() + " PART #" + channelName + "\n");
 			get_channel(channelName)->send_all_message(message);
 		}
 	}

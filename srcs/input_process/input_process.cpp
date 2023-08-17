@@ -57,6 +57,8 @@ int	input_process(int fd, char buffer[1024], Server *server)
 		returnvalue = ping(client, parsed, server, input);
 	else if (*command == "PONG")
 		returnvalue = pong(client);
+	else if (*command == "QUIT")
+		returnvalue = quit(client, server);
 	return (returnvalue);
 	// return (0);
 }
