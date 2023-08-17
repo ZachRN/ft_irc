@@ -18,41 +18,41 @@ int send_msg(int sockfd, std::string msg)
 	return (bytesSent);
 }
 
-void ping_all_clients(Server server)
+void ping_all_clients(Server* server)
 {
-	std::map<int, Client>::iterator it = server.get_clientList()->begin();
-	while (it != server.get_clientList()->end())
+	std::map<int, Client>::iterator it = server->get_clientList()->begin();
+	while (it != server->get_clientList()->end())
 	{
 		if ((*it).second.get_lastPong() + 60 < std::time(nullptr))
 		{
 			std::cout << "Client " << (*it).second.get_nickname() << " timed out." << std::endl;
 			close((*it).second.get_fd());
-			it = server.get_clientList()->erase(it);
+			it = server->get_clientList()->erase(it);
 		}
 		else if ((*it).second.get_verified() == true)
-			send_msg((*it).second.get_fd(), "PING " + server.get_config().get_serverName() + "\r\n");
+			send_msg((*it).second.get_fd(), "PING " + server->get_config().get_serverName() + "\r\n");
 		++it;
 	}
 }
 
-int start_listening(Server server)
+int start_listening(Server* server)
 {
 	// Start listening for incoming connections
-	if (listen(server.get_socket(), 5) == -1)
+	if (listen(server->get_socket(), 5) == -1)
 	{
 		std::cerr << "Error listening on socket." << std::endl;
-		close(server.get_socket());
+		close(server->get_socket());
 		return (FAILURE);
 	}
 
-	std::cout << "Server listening on port " << server.get_port() << std::endl;
+	std::cout << "Server listening on port " << server->get_port() << std::endl;
 	return (SUCCESS);
 }
 
-int check_client_sockets(Server *server, int nfds, struct pollfd *fds)
+void check_client_sockets(Server* server, struct pollfd *fds)
 {
 	// Check for data on client sockets (starting from 1, as 0 is the server socket)
-	for (int i = 1; i < nfds; ++i)
+	for (int i = 1; i < server->get_nfds(); ++i)
 	{
 		if (fds[i].revents & POLLIN)
 		{
@@ -62,22 +62,18 @@ int check_client_sockets(Server *server, int nfds, struct pollfd *fds)
 			{
 				buffer[bytesRead] = '\0';
 				input_process(fds[i].fd, buffer, server);
-				// std::cout << "Received from client " << fds[i].fd << ": " << buffer << std::endl;
-
-				// Send a response back to the client (for testing purposes)
-				// const char* response = "Received your message.\n";
-				// send(fds[i].fd, response, strlen(response), 0);
-			} else if (bytesRead == 0)
+			}
+			else if (bytesRead == 0)
 			{
 				std::cout << "Client " << fds[i].fd << " disconnected." << std::endl;
 				server->remove_client(fds[i].fd);
 				close(fds[i].fd);
 				// Shift the rest of the clients in the array to remove the disconnected client
-				for (int j = i; j < nfds - 1; ++j)
+				for (int j = i; j < server->get_nfds() - 1; ++j)
 				{
 					fds[j] = fds[j + 1];
 				}
-				--nfds;
+				server->decrement_nfds();
 				--i; // To recheck the current index as the next client has been moved here
 			} else
 			{
@@ -87,38 +83,37 @@ int check_client_sockets(Server *server, int nfds, struct pollfd *fds)
 					server->remove_client(fds[i].fd);
 					close(fds[i].fd);
 					// Shift the rest of the clients in the array to remove the disconnected client
-					for (int j = i; j < nfds - 1; ++j)
+					for (int j = i; j < server->get_nfds() - 1; ++j)
 					{
 						fds[j] = fds[j + 1];
 					}
-					--nfds;
+					server->decrement_nfds();
 					--i; // To recheck the current index as the next client has been moved here
 				}
 			}
 		}
 	}
-	return (nfds);
 }
 
-int run_server(Server server)
+int run_server(Server* server)
 {
 	std::vector<int>	client_sockets;
-	struct pollfd		fds[server.get_config().get_maxClients() + 1]; // +1 for the server socket
-	int					nfds = 1; // Number of file descriptors being monitored (initially 1 for the server socket)
+	struct pollfd		fds[server->get_config().get_maxClients() + 1]; // +1 for the server socket
 	struct sockaddr_in	clientAddr;
 	socklen_t			clientAddrLen = sizeof(clientAddr);
 
-	server.init_socket();
+	server->set_nfds(1); // Set the number of file descriptors being monitored to 1 (for the server socket)
+	server->init_socket();
 	if (start_listening(server) == FAILURE)
 		return (FAILURE);
 
-	fds[0].fd = server.get_socket();
+	fds[0].fd = server->get_socket();
 	fds[0].events = POLLIN; // Check for incoming data on the server socket
 
 	while (true)
 	{
 		// Use poll() to monitor sockets for I/O events
-		int result = poll(fds, nfds, 1000);
+		int result = poll(fds, server->get_nfds(), 1000);
 
 		if (result == -1)
 		{
@@ -129,8 +124,8 @@ int run_server(Server server)
 		// Check if the server socket has a new connection
 		if (fds[0].revents & POLLIN)
 		{
-			int clientSocket = accept(server.get_socket(), (struct sockaddr*)&clientAddr, &clientAddrLen);
-			if (clientSocket != -1 && nfds < server.get_config().get_maxClients() + 1)
+			int clientSocket = accept(server->get_socket(), (struct sockaddr*)&clientAddr, &clientAddrLen);
+			if (clientSocket != -1 && server->get_nfds() < server->get_config().get_maxClients() + 1)
 			{
 				if (fcntl(clientSocket, F_SETFL, O_NONBLOCK) == -1) // Set the client socket to non-blocking mode
 				{
@@ -138,10 +133,10 @@ int run_server(Server server)
 					return (FAILURE);
 				}
 				client_sockets.push_back(clientSocket);
-				fds[nfds].fd = clientSocket;
-				fds[nfds].events = POLLIN; // Check for incoming data on the client socket
-				++nfds;
-				server.add_client(clientSocket);
+				fds[server->get_nfds()].fd = clientSocket;
+				fds[server->get_nfds()].events = POLLIN; // Check for incoming data on the client socket
+				server->increment_nfds();
+				server->add_client(clientSocket);
 				std::cout << "New client connected #" << clientSocket << "." << std::endl;
 			}
 			else if (clientSocket != -1)
@@ -155,7 +150,7 @@ int run_server(Server server)
 				std::cerr << "Error accepting client connection: " << strerror(errno) << std::endl;
 			}
 		}
-		nfds = check_client_sockets(&server, nfds, fds);
+		check_client_sockets(server, fds);
 		if (std::time(nullptr) % 5 == 0)
 			ping_all_clients(server);
 	}

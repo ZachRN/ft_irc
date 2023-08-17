@@ -46,6 +46,26 @@ int	Server::get_port() const
 {
 	return (_port);
 }
+
+int	Server::get_nfds() const
+{
+	return (_nfds);
+}
+
+void	Server::set_nfds(int nfds)
+{
+	_nfds = nfds;
+}
+
+void	Server::increment_nfds()
+{
+	++_nfds;
+}
+
+void	Server::decrement_nfds()
+{
+	--_nfds;
+}
 //End of Regular Variable Functions
 
 //Client Map Functions

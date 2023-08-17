@@ -16,5 +16,6 @@ int	quit(Client* client, Server *server)
 	int fd = client->get_fd();
 	server->remove_client(fd);
 	close(fd);
+	server->decrement_nfds();
 	return (SUCCESS);
 }

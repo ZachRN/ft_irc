@@ -26,6 +26,7 @@ class Server
 		Config		_config;
 		std::string	_pass;
 		int			_port;
+		int			_nfds; // Number of file descriptors (clients) currently in use
 		std::map<int, Client> _clientList;
 		std::map<std::string, Channel> _channelList;
 		int			_socket;
@@ -40,6 +41,10 @@ class Server
 		// std::string	get_name() const;
 		std::string	get_pass() const;
 		int			get_port() const;
+		int			get_nfds() const;
+		void		set_nfds(int nfds);
+		void		increment_nfds();
+		void		decrement_nfds();
 
 		//Client Map Functions
 		

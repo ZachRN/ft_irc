@@ -18,5 +18,5 @@ int	main(int argc, char *argv[])
 	Server ircServer("testPass", 4242);
 	ircServer.get_config().parse_config("configs/config.txt");
 	std::cout << "password: " << ircServer.get_pass() << "\nport: " << ircServer.get_port() << std::endl;
-	run_server(ircServer);
+	run_server(&ircServer);
 }
