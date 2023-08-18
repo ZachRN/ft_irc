@@ -177,32 +177,92 @@ int	Server::remove_channel(std::string channelName)
 //Socket Functions
 int	Server::get_socket() const
 {
-	return (_socket);
+	return (_serverSocket);
 }
 
 int	Server::init_socket()
 {
 	// Create a socket
-	_socket = socket(AF_INET, SOCK_STREAM, 0);
-	if (_socket == -1)
+	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (_serverSocket == -1)
 	{
 		std::cerr << "Error creating socket." << std::endl;
 		return (FAILURE);
 	}
 
 	// Set the socket to non-blocking mode
-	fcntl(_socket, F_SETFL, O_NONBLOCK);
+	fcntl(_serverSocket, F_SETFL, O_NONBLOCK);
 
 	// Bind the socket to the designated port
 	_serverAddr.sin_family = AF_INET;
 	_serverAddr.sin_addr.s_addr = INADDR_ANY;
 	_serverAddr.sin_port = htons(_port);
-	if (bind(_socket, (struct sockaddr*)&_serverAddr, sizeof(_serverAddr)) == -1)
+	if (bind(_serverSocket, (struct sockaddr*)&_serverAddr, sizeof(_serverAddr)) == -1)
 	{
 		std::cerr << "Error binding socket to port " << _port << std::endl;
-		close(_socket);
+		close(_serverSocket);
 		return (FAILURE);
 	}
 	return (SUCCESS);
 }
 //End of Socket Functions
+
+//Start of Server Operation Functions
+int Server::start_server()
+{
+	if (init_server() == FAILURE)
+		return (FAILURE);
+	run_server();
+	close_server();
+	return (SUCCESS);
+}
+
+int	Server::init_server()
+{
+	// Create a socket
+	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (_serverSocket == -1)
+	{
+		std::cerr << "Error creating socket." << std::endl;
+		return (FAILURE);
+	}
+
+	// Set the socket to non-blocking mode
+	if (fcntl(_serverSocket, F_SETFL, O_NONBLOCK) == -1)
+	{
+		std::cerr << "Error setting socket to non-blocking mode." << std::endl;
+		close(_serverSocket);
+		return (FAILURE);
+	}
+
+	// Bind the socket to the designated port
+	_serverAddr.sin_family = AF_INET;
+	_serverAddr.sin_addr.s_addr = INADDR_ANY;
+	_serverAddr.sin_port = htons(_port);
+	if (bind(_serverSocket, (struct sockaddr*)&_serverAddr, sizeof(_serverAddr)) == -1)
+	{
+		std::cerr << "Error binding socket to port " << _port << std::endl;
+		close(_serverSocket);
+		return (FAILURE);
+	}
+
+	// Listen on the socket
+	if (listen(_serverSocket, 1) == -1)
+	{
+		std::cerr << "Error listening on socket." << std::endl;
+		close(_serverSocket);
+		return (FAILURE);
+	}
+	std::cout << "Server listening on port " << _port << std::endl;
+	pollfd serverPoll;
+	serverPoll.fd = _serverSocket;
+	serverPoll.events = POLLIN;
+	_fds.push_back(serverPoll);
+	return (SUCCESS);
+}
+
+void	Server::run_server()
+{
+	
+}
+//End of Server Operation Functions

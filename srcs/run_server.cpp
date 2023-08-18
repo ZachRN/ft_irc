@@ -20,6 +20,7 @@ int send_msg(int sockfd, std::string msg)
 
 void ping_all_clients(Server* server)
 {
+	std::vector<int> clientsToRemove;
 	std::map<int, Client>::iterator it = server->get_clientList()->begin();
 	while (it != server->get_clientList()->end())
 	{
@@ -27,11 +28,16 @@ void ping_all_clients(Server* server)
 		{
 			std::cout << "Client " << (*it).second.get_nickname() << " timed out." << std::endl;
 			close((*it).second.get_fd());
-			it = server->get_clientList()->erase(it);
+			clientsToRemove.push_back((*it).first);
 		}
 		else if ((*it).second.get_verified() == true)
 			send_msg((*it).second.get_fd(), "PING " + server->get_config().get_serverName() + "\r\n");
 		++it;
+	}
+	for (std::vector<int>::iterator it = clientsToRemove.begin(); it != clientsToRemove.end(); ++it)
+	{
+		server->remove_client(*it);
+		server->decrement_nfds();
 	}
 }
 
@@ -113,8 +119,7 @@ int run_server(Server* server)
 	while (true)
 	{
 		// Use poll() to monitor sockets for I/O events
-		int result = poll(fds, server->get_nfds(), 1000);
-
+		int result = poll(fds, server->get_nfds(), 1001);
 		if (result == -1)
 		{
 			std::cerr << "Error in poll()." << std::endl;

@@ -5,6 +5,7 @@
 # include <string>
 # include <map>
 # include <netinet/in.h>
+# include <poll.h>
 # include "client.hpp"
 # include "channel.hpp"
 # include "config.hpp"
@@ -26,10 +27,11 @@ class Server
 		Config		_config;
 		std::string	_pass;
 		int			_port;
-		int			_nfds; // Number of file descriptors (clients) currently in use
-		std::map<int, Client> _clientList;
-		std::map<std::string, Channel> _channelList;
-		int			_socket;
+		std::vector<pollfd>	_fds; // File descriptors (clients) currently in use
+		int					_nfds; // Number of file descriptors (clients) currently in use
+		std::map<int, Client> 			_clientList;
+		std::map<std::string, Channel>	_channelList;
+		int					_serverSocket;
 		struct sockaddr_in	_serverAddr;
 	public:
 		//Initilization
@@ -75,6 +77,13 @@ class Server
 		int		init_socket();
 		int		close_socket();
 		//End of Socket Functions
+
+		//Start of Server Operation Functions
+		int		start_server();
+		int		init_server();
+		void	run_server();
+		void	close_server();
+		//End of Server Operation Functions
 };
 
 #endif
