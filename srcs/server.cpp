@@ -1,4 +1,6 @@
 #include <iostream>
+#include <chrono>
+#include <ctime>
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -8,6 +10,7 @@
 #include "channel.hpp"
 #include "config.hpp"
 #include "leave.hpp"
+#include "run_server.hpp"
 #include "server.hpp"
 #include "utils.hpp"
 
@@ -172,7 +175,7 @@ int	Server::remove_channel(std::string channelName)
 	return (SUCCESS);
 }
 
-//END OF CHANNEL MAP FUCNTIONS
+//END OF CHANNEL MAP FUNCTIONS
 
 //Socket Functions
 int	Server::get_socket() const
@@ -263,6 +266,84 @@ int	Server::init_server()
 
 void	Server::run_server()
 {
-	
+	// while (true)
+	// {
+	// 	int ret = poll(_fds.data(), _fds.size(), -1); // Wait indefinitely
+
+	// 	if (ret == -1)
+	// 	{
+	// 		std::cerr << "Error polling sockets." << std::endl;
+	// 		break;
+	// 	}
+
+	// 	for (size_t i = 0; i < _fds.size(); ++i) {
+	// 		if (_fds[i].revents & POLLIN)
+	// 		{
+	// 			if (i == 0)
+	// 			{
+	// 				// Server socket has incoming connection
+	// 				// Handle the new connection and add the client socket to the vector
+	// 				struct sockaddr_in clientAddr;
+	// 				socklen_t clientAddrSize = sizeof(clientAddr);
+	// 				int clientSocket = accept(_serverSocket, (struct sockaddr*)&clientAddr, &clientAddrSize);
+	// 				if (clientSocket == -1)
+	// 				{
+	// 					std::cerr << "Error accepting connection." << std::endl;
+	// 				}
+	// 				else if (clientSocket != -1 && _nfds < _config.get_maxClients() + 1)
+	// 				{
+	// 					_fds[_nfds].fd = clientSocket;
+	// 					_fds[_nfds].events = POLLIN;
+	// 					++_nfds;
+	// 					add_client(clientSocket);
+	// 					std::cout << "New client connected #" << _nfds - 1 << "." << std::endl;
+	// 				}
+	// 				else if (clientSocket != -1)
+	// 				{
+	// 					std::cout << "Maximum number of clients reached." << std::endl;
+	// 					std::string msg = ":" + _config.get_host() + " 999 " + _config.get_serverName() + " :Maximum number of clients reached.\r\n";
+	// 					send(clientSocket, msg.c_str(), msg.length(), 0);
+	// 					close(clientSocket);
+	// 				}
+	// 			}
+	// 			else
+	// 			{
+	// 				// Client socket has incoming data
+	// 				// Handle the received data
+	// 			}
+	// 		}
+
+	// 		if (_fds[i].revents & POLLOUT)
+	// 		{
+	// 			if (i >= 2)
+	// 			{
+	// 				// Client socket is ready for writing
+	// 				// Send data to the client
+	// 			}
+	// 		}
+
+	// 		if (_fds[i].revents & POLLHUP)
+	// 		{
+	// 			if (i >= 2)
+	// 			{
+	// 				// Client socket has been disconnected
+	// 				// Clean up and remove the socket from the vector
+	// 			}
+	// 		}
+	// 	}
+	// }
+}
+
+void	Server::close_server()
+{
+	// Send messages to all clients that the server is shutting down and then close all client sockets
+	for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
+	{
+		std::string message = (":" + _config.get_serverName() + " QUIT :Server shutting down.\n");
+		send_msg(it->first, message);
+		close(it->first);
+	}
+	// Close the server socket
+	close(_serverSocket);
 }
 //End of Server Operation Functions
