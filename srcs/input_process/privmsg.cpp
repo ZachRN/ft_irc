@@ -17,7 +17,7 @@ static void send_channel_msg(Client* client, std::vector<std::string> parsed_inp
 	for (std::vector<Client*>::const_iterator to_send = clientList.begin(); to_send != clientList.end(); to_send++)
 	{
 		if ((*to_send)->get_fd() != client->get_fd())
-			send_msg((*to_send)->get_fd(), the_message);
+			channel->get_server()->send_msg((*to_send)->get_fd(), the_message);
 	}
 }
 

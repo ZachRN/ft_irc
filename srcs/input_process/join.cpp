@@ -32,14 +32,14 @@ static void send_channel_clientlist(Channel* channel, Client* to_send)
 						" :" +
 						clients_string(channel, clientList) +
 						"\n");
-	send_msg(to_send->get_fd(), message);
+	channel->get_server()->send_msg(to_send->get_fd(), message);
 	message = (":" + to_send->get_server()->get_config().get_host() +
 						" 366 " +
 						to_send->get_nickname() +
 						" #" +
 						channel->get_name() +
 						" :End of /NAMES list.\n");
-	send_msg(to_send->get_fd(), message);
+	channel->get_server()->send_msg(to_send->get_fd(), message);
 }
 
 static void send_join(Client* client, Channel* channel, std::string channel_name)
@@ -59,37 +59,37 @@ int join_single_channel(Client* client, std::string channel_name, Server *server
 		case PASSWORD_INVALID:
 		{
 			std::string message = (":" + server->get_config().get_host() + " 475 " + client->get_nickname() + " #" + channel_name + " :Cannot join channel (+k)\n");
-			send_msg(client->get_fd(), message);
+			server->send_msg(client->get_fd(), message);
 			return retvalue;
 		}
 		case USER_LIMIT:
 		{
 			std::string message = (":" + server->get_config().get_host() + " 471 " + client->get_nickname() + " #" + channel_name + " :Cannot join channel (+l)\n");
-			send_msg(client->get_fd(), message);
+			server->send_msg(client->get_fd(), message);
 			return retvalue;
 		}
 		case REQUIRED_INVITE:
 		{
 			std::string message = (":" + server->get_config().get_host() + " 473 " + client->get_nickname() + " #" + channel_name + " :Cannot join channel (+i)\n");
-			send_msg(client->get_fd(), message);
+			server->send_msg(client->get_fd(), message);
 			return retvalue;
 		}
 		case ALREADY_IN_CHANNEL:
 		{
 			std::string message = (":" + server->get_config().get_host() + " 443 " + client->get_nickname() + " #" + channel_name + " :is already on channel\n");
-			send_msg(client->get_fd(), message);
+			server->send_msg(client->get_fd(), message);
 			return retvalue;
 		}
 		case CHANNEL_NAME_IN_USE:
 		{
 			std::string message = (":" + server->get_config().get_host() + " 400 " + client->get_nickname() + " #" + channel_name + " :Channel name is already in use\n");
-			send_msg(client->get_fd(), message);
+			server->send_msg(client->get_fd(), message);
 			return retvalue;
 		}
 		case NAME_SYNTAX_INVALID:
 		{
 			std::string message = (":" + server->get_config().get_host() + " 403 " + client->get_nickname() + " #" + channel_name + " :No such channel\n");
-			send_msg(client->get_fd(), message);
+			server->send_msg(client->get_fd(), message);
 			return retvalue;
 		}
 		case SUCCESS:

@@ -84,6 +84,9 @@ class Server
 		void	run_server();
 		void	close_server();
 		//End of Server Operation Functions
+
+		int		send_msg(int sockfd, std::string msg);
+		int		send_all_deques();
 };
 
 #endif

@@ -10,7 +10,7 @@ static void send_nick(Client* client, Server* server, std::string old_name)
 	std::cout << message << std::endl;
 	for (std::map<int, Client>::iterator to_send = clientList->begin(); to_send != clientList->end(); to_send++)
 	{
-		send_msg(to_send->second.get_fd(), message);
+		server->send_msg(to_send->second.get_fd(), message);
 	}
 }
 

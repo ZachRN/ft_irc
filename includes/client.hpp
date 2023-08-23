@@ -2,6 +2,7 @@
 # define CLIENT_HPP
 
 # include <ctime>
+# include <deque>
 # include <iostream>
 # include <string>
 # include <vector>
@@ -45,6 +46,7 @@ class Client
 		Server		*_server;
 		std::time_t	_lastPong;
 		std::vector<Channel*> _channelList;
+		std::deque<std::string> _messageQueue;
 	private:
 		void		set_verified();
 	public:
@@ -65,6 +67,12 @@ class Client
 		Server*		get_server() const;
 		std::time_t	get_lastPong() const;
 		void		set_lastPong(std::time_t lastPong);
+
+		//Message Queue
+		void		push_message(std::string message);
+		std::string	pop_message();
+		bool		has_messages() const;
+
 
 		//User Actions
 		int			join_channel(std::string channelName, std::string password);

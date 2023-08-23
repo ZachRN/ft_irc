@@ -69,7 +69,7 @@ static int password_mode(Client* client, std::vector<std::string> parsed_input, 
 			channel->send_all_message(message + " -k\n");
 	}
 	if (retvalue == NAME_SYNTAX_INVALID)
-		send_msg(client->get_fd(), ":" + client->get_fullref() + " 464 " + password + " :Password incorrect\n");
+		channel->get_server()->send_msg(client->get_fd(), ":" + client->get_fullref() + " 464 " + password + " :Password incorrect\n");
 	return (SUCCESS);
 }
 
@@ -79,7 +79,7 @@ static int operator_mode(Client* client, std::vector<std::string> parsed_input, 
 	std::string message = client->get_fullref() + " MODE #" + channel->get_name();
 	if (user == "")
 	{
-		send_msg(client->get_fd(), (":" + server->get_config().get_host() + " 461 " + client->get_nickname() + " MODE :Not enough parameters\n"));
+		server->send_msg(client->get_fd(), (":" + server->get_config().get_host() + " 461 " + client->get_nickname() + " MODE :Not enough parameters\n"));
 		return (FAILURE);
 	}
 	int retvalue = 0;
@@ -96,7 +96,7 @@ static int operator_mode(Client* client, std::vector<std::string> parsed_input, 
 			channel->send_all_message((message + " -o " + server->get_client(user)->get_nickname() + "\n"));
 	}
 	if (retvalue == NO_CLIENT_FOUND)
-		send_msg(client->get_fd(),(":" + server->get_config().get_host() + " 401 " + client->get_nickname() + " " + user + " :No such nick/channel\n"));
+		server->send_msg(client->get_fd(),(":" + server->get_config().get_host() + " 401 " + client->get_nickname() + " " + user + " :No such nick/channel\n"));
 	return (SUCCESS);
 }
 
@@ -105,21 +105,21 @@ static int limit_mode(Client* client, std::vector<std::string> parsed_input, Cha
 	std::string limit = (parsed_input.size() > 3) ? (parsed_input.at(3)) : "0";
 	if (limit.size() > 4)
 	{
-		send_msg(client->get_fd(), ":" +server->get_config().get_serverName()+ " 400 " + client->get_nickname() + " :Unknown Set limit over the config limit.\n");
+		server->send_msg(client->get_fd(), ":" +server->get_config().get_serverName()+ " 400 " + client->get_nickname() + " :Unknown Set limit over the config limit.\n");
 		return (FAILURE);
 	}
 	if (limit.find_first_not_of("0123456789") != std::string::npos)
 	{
-		send_msg(client->get_fd(), ":" +server->get_config().get_serverName()+ " 400 " + client->get_nickname() + " :Unknown Limit didn't contain only numeric characters.\n");
+		server->send_msg(client->get_fd(), ":" +server->get_config().get_serverName()+ " 400 " + client->get_nickname() + " :Unknown Limit didn't contain only numeric characters.\n");
 		return (FAILURE);
 	}
 	int numLimit = -1;
 	try{numLimit = std::stoi(limit);}
 	catch (...){numLimit = -1;}
 	//MAYBE > INSTEAD OF >=
-	if (numLimit >= server->get_config().get_maxClients() || numLimit < 0)
+	if (numLimit >= static_cast<int>(server->get_config().get_maxClients()) || numLimit < 0)
 	{
-		send_msg(client->get_fd(), ":" +server->get_config().get_serverName()+ " 400 " + client->get_nickname() + " :Unknown Set limit over the config limit.\n");
+		server->send_msg(client->get_fd(), ":" + server->get_config().get_serverName()+ " 400 " + client->get_nickname() + " :Unknown Set limit over the config limit.\n");
 		return (FAILURE);
 	}
 	std::string message = client->get_fullref() + " MODE #" + channel->get_name();
@@ -150,12 +150,12 @@ int mode(Client* client, std::vector<std::string> parsed_input, Server *server)
 	Channel* channel = server->get_channel(channel_name);
 	if (channel == nullptr)
 	{
-		send_msg(client->get_fd(),(":" + server->get_config().get_host() + " 403 " + client->get_nickname() + " #" + channel_name + " :No such channel\n"));
+		server->send_msg(client->get_fd(),(":" + server->get_config().get_host() + " 403 " + client->get_nickname() + " #" + channel_name + " :No such channel\n"));
 		return (NO_CHANNEL_FOUND);
 	}
 	if (channel->client_is_operator(client->get_nickname()) == false)
 	{
-		send_msg(client->get_fd(),(":" + server->get_config().get_host() + " 482 " + client->get_nickname() + " #" + channel_name + " :You're not channel operator\n"));
+		server->send_msg(client->get_fd(),(":" + server->get_config().get_host() + " 482 " + client->get_nickname() + " #" + channel_name + " :You're not channel operator\n"));
 		return (NO_CHANNEL_FOUND);
 	}
 	if (parsed_input.size() < 2)
@@ -171,6 +171,6 @@ int mode(Client* client, std::vector<std::string> parsed_input, Server *server)
 		return (operator_mode(client, parsed_input, channel, mode, server));
 	if (mode == "l" || mode == "-l")
 		return (limit_mode(client, parsed_input, channel, mode, server));
-	send_msg(client->get_fd(), (":" + server->get_config().get_host() + " 421 " + mode + " :Unknown Command\n"));
+	server->send_msg(client->get_fd(), (":" + server->get_config().get_host() + " 421 " + mode + " :Unknown Command\n"));
 	return (FAILURE);
 }

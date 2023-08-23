@@ -8,16 +8,6 @@
 #include "server.hpp"
 #include "input_process.hpp"
 
-int send_msg(int sockfd, std::string msg)
-{
-	int bytesSent = send(sockfd, msg.c_str(), msg.length(), 0);
-	if (bytesSent == -1)
-	{
-		std::cerr << "Error sending data to client " << sockfd << ": " << strerror(errno) << std::endl;
-	}
-	return (bytesSent);
-}
-
 void ping_all_clients(Server* server)
 {
 	std::vector<int> clientsToRemove;
@@ -31,7 +21,7 @@ void ping_all_clients(Server* server)
 			clientsToRemove.push_back((*it).first);
 		}
 		else if ((*it).second.get_verified() == true)
-			send_msg((*it).second.get_fd(), "PING " + server->get_config().get_serverName() + "\r\n");
+			server->send_msg((*it).second.get_fd(), "PING " + server->get_config().get_serverName() + "\r\n");
 		++it;
 	}
 	for (std::vector<int>::iterator it = clientsToRemove.begin(); it != clientsToRemove.end(); ++it)
@@ -81,7 +71,8 @@ void check_client_sockets(Server* server, struct pollfd *fds)
 				}
 				server->decrement_nfds();
 				--i; // To recheck the current index as the next client has been moved here
-			} else
+			}
+			else
 			{
 				if (errno != EAGAIN && errno != EWOULDBLOCK)
 				{
@@ -103,62 +94,63 @@ void check_client_sockets(Server* server, struct pollfd *fds)
 
 int run_server(Server* server)
 {
-	std::vector<int>	client_sockets;
-	struct pollfd		fds[server->get_config().get_maxClients() + 1]; // +1 for the server socket
-	struct sockaddr_in	clientAddr;
-	socklen_t			clientAddrLen = sizeof(clientAddr);
+	(void)server;
+	// std::vector<int>	client_sockets;
+	// struct pollfd		fds[server->get_config().get_maxClients() + 1]; // +1 for the server socket
+	// struct sockaddr_in	clientAddr;
+	// socklen_t			clientAddrLen = sizeof(clientAddr);
 
-	server->set_nfds(1); // Set the number of file descriptors being monitored to 1 (for the server socket)
-	server->init_socket();
-	if (start_listening(server) == FAILURE)
-		return (FAILURE);
+	// server->set_nfds(1); // Set the number of file descriptors being monitored to 1 (for the server socket)
+	// server->init_socket();
+	// if (start_listening(server) == FAILURE)
+	// 	return (FAILURE);
 
-	fds[0].fd = server->get_socket();
-	fds[0].events = POLLIN; // Check for incoming data on the server socket
+	// fds[0].fd = server->get_socket();
+	// fds[0].events = POLLIN; // Check for incoming data on the server socket
 
-	while (true)
-	{
-		// Use poll() to monitor sockets for I/O events
-		int result = poll(fds, server->get_nfds(), 1001);
-		if (result == -1)
-		{
-			std::cerr << "Error in poll()." << std::endl;
-			break;
-		}
+	// while (true)
+	// {
+	// 	// Use poll() to monitor sockets for I/O events
+	// 	int result = poll(fds, server->get_nfds(), 1001);
+	// 	if (result == -1)
+	// 	{
+	// 		std::cerr << "Error in poll()." << std::endl;
+	// 		break;
+	// 	}
 
-		// Check if the server socket has a new connection
-		if (fds[0].revents & POLLIN)
-		{
-			int clientSocket = accept(server->get_socket(), (struct sockaddr*)&clientAddr, &clientAddrLen);
-			if (clientSocket != -1 && server->get_nfds() < server->get_config().get_maxClients() + 1)
-			{
-				if (fcntl(clientSocket, F_SETFL, O_NONBLOCK) == -1) // Set the client socket to non-blocking mode
-				{
-					std::cerr << "Could not set socket to non-blocking." << std::endl;
-					return (FAILURE);
-				}
-				client_sockets.push_back(clientSocket);
-				fds[server->get_nfds()].fd = clientSocket;
-				fds[server->get_nfds()].events = POLLIN; // Check for incoming data on the client socket
-				server->increment_nfds();
-				server->add_client(clientSocket);
-				std::cout << "New client connected #" << clientSocket << "." << std::endl;
-			}
-			else if (clientSocket != -1)
-			{
-				std::cerr << "Max clients reached." << std::endl;
-				send_msg(clientSocket, ":localhost 999 test :Server is full.\n");
-				close(clientSocket);
-			}
-			else
-			{
-				std::cerr << "Error accepting client connection: " << strerror(errno) << std::endl;
-			}
-		}
-		check_client_sockets(server, fds);
-		if (std::time(nullptr) % 5 == 0)
-			ping_all_clients(server);
-	}
+	// 	// Check if the server socket has a new connection
+	// 	if (fds[0].revents & POLLIN)
+	// 	{
+	// 		int clientSocket = accept(server->get_socket(), (struct sockaddr*)&clientAddr, &clientAddrLen);
+	// 		if (clientSocket != -1 && server->get_nfds() < server->get_config().get_maxClients() + 1)
+	// 		{
+	// 			if (fcntl(clientSocket, F_SETFL, O_NONBLOCK) == -1) // Set the client socket to non-blocking mode
+	// 			{
+	// 				std::cerr << "Could not set socket to non-blocking." << std::endl;
+	// 				return (FAILURE);
+	// 			}
+	// 			client_sockets.push_back(clientSocket);
+	// 			fds[server->get_nfds()].fd = clientSocket;
+	// 			fds[server->get_nfds()].events = POLLIN; // Check for incoming data on the client socket
+	// 			server->increment_nfds();
+	// 			server->add_client(clientSocket);
+	// 			std::cout << "New client connected #" << clientSocket << "." << std::endl;
+	// 		}
+	// 		else if (clientSocket != -1)
+	// 		{
+	// 			std::cerr << "Max clients reached." << std::endl;
+	// 			server->send_msg(clientSocket, ":localhost 999 test :Server is full.\n");
+	// 			close(clientSocket);
+	// 		}
+	// 		else
+	// 		{
+	// 			std::cerr << "Error accepting client connection: " << strerror(errno) << std::endl;
+	// 		}
+	// 	}
+	// 	check_client_sockets(server, fds);
+	// 	if (std::time(nullptr) % 5 == 0)
+	// 		ping_all_clients(server);
+	// }
 
 	return (SUCCESS);
 }

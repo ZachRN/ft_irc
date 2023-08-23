@@ -45,13 +45,13 @@ void	Client::set_verified()
 	if (get_verified() == true)
 		return ;
 	_verified = true;
-	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 001 " + get_nickname() + " :Welcome to the Internet Relay Network " + _fullRef + "\n"));
-	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 002 " + get_nickname() + " :Your host is " + _server->get_config().get_host() + ", running version " + _server->get_config().get_version() + "\n"));
-	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 003 " + get_nickname() + " :This server was created sometime\n"));
-	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 004 " + get_nickname() + " " + _server->get_config().get_host() + " 1.0 o o\n"));
-	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 375 " + get_nickname() + " :- localhost Message of the Day - \n"));
-	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 372 " + get_nickname() + " :- Welcome to the Internet Relay Network.\n"));
-	send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 376 " + get_nickname() + " :End of MOTD command\n"));
+	_server->send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 001 " + get_nickname() + " :Welcome to the Internet Relay Network " + _fullRef + "\n"));
+	_server->send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 002 " + get_nickname() + " :Your host is " + _server->get_config().get_host() + ", running version " + _server->get_config().get_version() + "\n"));
+	_server->send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 003 " + get_nickname() + " :This server was created sometime\n"));
+	_server->send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 004 " + get_nickname() + " " + _server->get_config().get_host() + " 1.0 o o\n"));
+	_server->send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 375 " + get_nickname() + " :- localhost Message of the Day - \n"));
+	_server->send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 372 " + get_nickname() + " :- Welcome to the Internet Relay Network.\n"));
+	_server->send_msg(get_fd(), (":" + _server->get_config().get_serverName() + " 376 " + get_nickname() + " :End of MOTD command\n"));
 }
 
 int	Client::get_fd() const
@@ -118,6 +118,23 @@ std::time_t	Client::get_lastPong() const
 void		Client::set_lastPong(std::time_t lastPong)
 {
 	_lastPong = lastPong;
+}
+
+void		Client::push_message(std::string message)
+{
+	_messageQueue.push_back(message);
+}
+
+std::string	Client::pop_message()
+{
+	std::string message = _messageQueue.front();
+	_messageQueue.pop_front();
+	return (message);
+}
+
+bool		Client::has_messages() const
+{
+	return (_messageQueue.size() > 0);
 }
 
 static int	can_join_channel(Channel* channel, std::string password, std::string nickname)

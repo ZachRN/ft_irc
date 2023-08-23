@@ -9,6 +9,7 @@
 #include "client.hpp"
 #include "channel.hpp"
 #include "config.hpp"
+#include "input_process.hpp"
 #include "leave.hpp"
 #include "run_server.hpp"
 #include "server.hpp"
@@ -250,7 +251,7 @@ int	Server::init_server()
 	}
 
 	// Listen on the socket
-	if (listen(_serverSocket, 1) == -1)
+	if (listen(_serverSocket, 5) == -1)
 	{
 		std::cerr << "Error listening on socket." << std::endl;
 		close(_serverSocket);
@@ -259,79 +260,92 @@ int	Server::init_server()
 	std::cout << "Server listening on port " << _port << std::endl;
 	pollfd serverPoll;
 	serverPoll.fd = _serverSocket;
-	serverPoll.events = POLLIN;
+	serverPoll.events = POLLIN | POLLOUT | POLLHUP;
 	_fds.push_back(serverPoll);
 	return (SUCCESS);
 }
 
 void	Server::run_server()
 {
-	// while (true)
-	// {
-	// 	int ret = poll(_fds.data(), _fds.size(), -1); // Wait indefinitely
+	while (true)
+	{
+		int ret = poll(_fds.data(), _fds.size(), 1000); // Wait indefinitely
 
-	// 	if (ret == -1)
-	// 	{
-	// 		std::cerr << "Error polling sockets." << std::endl;
-	// 		break;
-	// 	}
+		if (ret == -1)
+		{
+			std::cerr << "Error polling sockets." << std::endl;
+			break;
+		}
 
-	// 	for (size_t i = 0; i < _fds.size(); ++i) {
-	// 		if (_fds[i].revents & POLLIN)
-	// 		{
-	// 			if (i == 0)
-	// 			{
-	// 				// Server socket has incoming connection
-	// 				// Handle the new connection and add the client socket to the vector
-	// 				struct sockaddr_in clientAddr;
-	// 				socklen_t clientAddrSize = sizeof(clientAddr);
-	// 				int clientSocket = accept(_serverSocket, (struct sockaddr*)&clientAddr, &clientAddrSize);
-	// 				if (clientSocket == -1)
-	// 				{
-	// 					std::cerr << "Error accepting connection." << std::endl;
-	// 				}
-	// 				else if (clientSocket != -1 && _nfds < _config.get_maxClients() + 1)
-	// 				{
-	// 					_fds[_nfds].fd = clientSocket;
-	// 					_fds[_nfds].events = POLLIN;
-	// 					++_nfds;
-	// 					add_client(clientSocket);
-	// 					std::cout << "New client connected #" << _nfds - 1 << "." << std::endl;
-	// 				}
-	// 				else if (clientSocket != -1)
-	// 				{
-	// 					std::cout << "Maximum number of clients reached." << std::endl;
-	// 					std::string msg = ":" + _config.get_host() + " 999 " + _config.get_serverName() + " :Maximum number of clients reached.\r\n";
-	// 					send(clientSocket, msg.c_str(), msg.length(), 0);
-	// 					close(clientSocket);
-	// 				}
-	// 			}
-	// 			else
-	// 			{
-	// 				// Client socket has incoming data
-	// 				// Handle the received data
-	// 			}
-	// 		}
+		for (size_t i = 0; i < _fds.size(); ++i) {
+			if (_fds[i].revents & POLLIN)
+			{
+				if (i == 0)
+				{
+					// Server socket has incoming connection
+					// Handle the new connection and add the client socket to the vector
+					struct sockaddr_in clientAddr;
+					socklen_t clientAddrSize = sizeof(clientAddr);
+					int clientSocket = accept(_serverSocket, (struct sockaddr*)&clientAddr, &clientAddrSize);
+					if (clientSocket != -1 && _fds.size() < _config.get_maxClients() + 1)
+					{
+						pollfd clientPoll;
+						clientPoll.fd = clientSocket;
+						clientPoll.events = POLLIN | POLLOUT | POLLHUP;
+						_fds.push_back(clientPoll);
+						add_client(clientSocket);
+						std::cout << "New client connected #" << clientSocket << "." << std::endl;
+					}
+					else if (clientSocket != -1)
+					{
+						std::cout << "Maximum number of clients reached." << std::endl;
+						std::string msg = ":" + _config.get_host() + " 999 " + _config.get_serverName() + " :Maximum number of clients reached.\r\n";
+						send(clientSocket, msg.c_str(), msg.length(), 0);
+						close(clientSocket);
+					}
+					else
+					{
+						std::cerr << "Error accepting client connection: " << strerror(errno) << std::endl;
+					}
+				}
+				else
+				{
+					// Client socket has incoming data
+					// Handle the received data
+					char buffer[512];
+					int bytesReceived = recv(_fds[i].fd, buffer, sizeof(buffer), 0);
+					if (bytesReceived > 0)
+					{
+						buffer[bytesReceived] = '\0';
+						input_process(_fds[i].fd, buffer, this);
+					}
+				}
+			}
 
-	// 		if (_fds[i].revents & POLLOUT)
-	// 		{
-	// 			if (i >= 2)
-	// 			{
-	// 				// Client socket is ready for writing
-	// 				// Send data to the client
-	// 			}
-	// 		}
+			if (_fds[i].revents & POLLOUT)
+			{
+				if (i >= 1)
+				{
+					// Client socket is ready for writing
+					// Send data to the client
+					send_all_deques();
+				}
+			}
 
-	// 		if (_fds[i].revents & POLLHUP)
-	// 		{
-	// 			if (i >= 2)
-	// 			{
-	// 				// Client socket has been disconnected
-	// 				// Clean up and remove the socket from the vector
-	// 			}
-	// 		}
-	// 	}
-	// }
+			if (_fds[i].revents & POLLHUP)
+			{
+				if (i >= 1)
+				{
+					// Client socket has been disconnected
+					// Clean up and remove the socket from the vector
+					std::cout << "Client #" << i << " disconnected." << std::endl;
+					remove_client(_fds[i].fd);
+					close(_fds[i].fd);
+					_fds.erase(_fds.begin() + i);
+				}
+			}
+		}
+	}
 }
 
 void	Server::close_server()
@@ -347,3 +361,29 @@ void	Server::close_server()
 	close(_serverSocket);
 }
 //End of Server Operation Functions
+
+int Server::send_msg(int sockfd, std::string msg)
+{
+	Client* client = get_client(sockfd);
+	if (client == nullptr)
+		return (FAILURE);
+	client->push_message(msg);
+	return (SUCCESS);
+}
+
+int Server::send_all_deques()
+{
+	for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
+	{
+		while (it->second.has_messages() == true)
+		{
+			std::string message = it->second.pop_message();
+			if (send(it->first, message.c_str(), message.length(), 0) == -1)
+			{
+				std::cerr << "Error sending message to client " << it->first << std::endl;
+				return (FAILURE);
+			}
+		}
+	}
+	return (SUCCESS);
+}

@@ -91,6 +91,7 @@ class Channel
 		bool					get_topic_operator() const;
 		std::string				get_password() const;
 		bool					get_invite() const;
+		Server*					get_server() const;
 		std::vector<Client*>	get_clients() const;
 		bool					client_in_channel(std::string nickname) const;
 		std::vector<Client*>	get_operators() const;
@@ -114,7 +115,7 @@ class Channel
 		int		set_password(std::string password, Client* client);
 		size_t	get_limit() const;
 		bool	get_limit_enabled() const;
-		int		set_limit(int limit, Client* client);
+		int		set_limit(size_t limit, Client* client);
 		int		set_topic_operator(Client* client);
 		int		set_flip_limit_enabled(Client* client);
 

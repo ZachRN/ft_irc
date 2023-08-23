@@ -13,7 +13,7 @@ class Config
 		std::string	_channelModes;
 		std::string	_motd;
 		int			_timeout;
-		int			_maxClients;
+		size_t		_maxClients;
 	public:
 		Config();
 		~Config();
@@ -24,7 +24,7 @@ class Config
 		std::string	get_channelModes() const;
 		std::string	get_motd() const;
 		int			get_timeout() const;
-		int			get_maxClients() const;
+		size_t		get_maxClients() const;
 
 		void		print_config() const;
 		int			parse_config(std::string configPath);

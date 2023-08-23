@@ -11,7 +11,7 @@ int ping(Client* client, std::vector<std::string> parsed_input, Server *server, 
 		user_msg = unparsed.substr(colon_pos + 1) + "\n";
 	else if (parsed_input.size() > 1)
 		user_msg = parsed_input.at(1);
-	send_msg(client->get_fd(),
+	server->send_msg(client->get_fd(),
 			":" + server->get_config().get_host() +
 			" PONG " + server->get_config().get_serverName() +
 			" :" + user_msg + "\r\n");

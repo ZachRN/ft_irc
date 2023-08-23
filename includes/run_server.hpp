@@ -4,6 +4,5 @@
 # include "server.hpp"
 
 int run_server(Server* server);
-int send_msg(int sockfd, std::string msg);
 
 #endif

@@ -5,7 +5,7 @@
 void send_leave(Client* client, Channel* channel, std::string channel_name)
 {
 	std::string message = (":" + client->get_fullref() + " PART " + channel_name + "\n");
-	send_msg(client->get_fd(), message);
+	channel->get_server()->send_msg(client->get_fd(), message);
 	
 	if (channel == nullptr)
 		return ;
