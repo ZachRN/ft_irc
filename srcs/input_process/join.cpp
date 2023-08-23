@@ -25,7 +25,7 @@ static void send_channel_topic(Channel* channel, Client* to_send)
 {
 	if (channel->get_topic() == "")
 		return ;
-	send_msg(to_send->get_fd(), ":" + to_send->get_server()->get_config().get_host() + " 332 " + to_send->get_nickname() + " #" + channel->get_name() + " :" + channel->get_topic());
+	channel->get_server()->send_msg(to_send->get_fd(), ":" + to_send->get_server()->get_config().get_host() + " 332 " + to_send->get_nickname() + " #" + channel->get_name() + " :" + channel->get_topic());
 }
 
 static void send_channel_clientlist(Channel* channel, Client* to_send)

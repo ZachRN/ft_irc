@@ -338,7 +338,7 @@ void	Server::run_server()
 				{
 					// Client socket has been disconnected
 					// Clean up and remove the socket from the vector
-					std::cout << "Client #" << i << " disconnected." << std::endl;
+					std::cout << "Client #" << _fds[i].fd << " disconnected." << std::endl;
 					remove_client(_fds[i].fd);
 					close(_fds[i].fd);
 					_fds.erase(_fds.begin() + i);

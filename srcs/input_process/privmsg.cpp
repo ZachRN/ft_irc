@@ -25,7 +25,7 @@ int privmsg(Client* client, std::vector<std::string> parsed_input, Server *serve
 {
 	if (parsed_input.size() < 3)
 	{
-		send_msg(client->get_fd(), (":" + server->get_config().get_host() + " 461 " + client->get_nickname() + " INVITE :Not enough parameters\n"));
+		server->send_msg(client->get_fd(), (":" + server->get_config().get_host() + " 461 " + client->get_nickname() + " INVITE :Not enough parameters\n"));
 		return (FAILURE);
 	}
 	std::string channel_name = (*(++(parsed_input.begin()))).substr(1);
@@ -33,12 +33,12 @@ int privmsg(Client* client, std::vector<std::string> parsed_input, Server *serve
 	unparsed = trim_whitespace(unparsed);
 	if (channel == nullptr)
 	{
-		send_msg(client->get_fd(),(":" + server->get_config().get_host() + " 403 " + client->get_nickname() + " #" + channel_name + " :No such channel\n"));
+		server->send_msg(client->get_fd(),(":" + server->get_config().get_host() + " 403 " + client->get_nickname() + " #" + channel_name + " :No such channel\n"));
 		return (NO_CHANNEL_FOUND);
 	}
 	if (channel->client_in_channel(client->get_nickname()) == false)
 	{
-		send_msg(client->get_fd(), ":" + server->get_config().get_host() + " 400 " + client->get_nickname() + " #" + channel_name + " :Unknown You aren't in channel.\n");
+		server->send_msg(client->get_fd(), ":" + server->get_config().get_host() + " 400 " + client->get_nickname() + " #" + channel_name + " :Unknown You aren't in channel.\n");
 		return (FAILURE);
 	}
 	send_channel_msg(client, parsed_input, channel, unparsed);
