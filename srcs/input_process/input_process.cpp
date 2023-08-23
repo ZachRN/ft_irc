@@ -37,7 +37,7 @@ int	input_process(int fd, char buffer[1024], Server *server)
 	std::vector<std::string>::const_iterator command = parsed.begin();
 	int returnvalue = SUCCESS;
 	std::cout << input << std::endl;
-	if (parsed.size() == 0)
+	if (parsed.size() < 2)
 		return (FAILURE);
 	if (*command == "NICK")
 		returnvalue = nickname(client, parsed, server);
@@ -53,6 +53,12 @@ int	input_process(int fd, char buffer[1024], Server *server)
 		returnvalue = privmsg(client, parsed, server, input);
 	else if (*command == "MODE")
 		returnvalue = mode(client, parsed, server);
+	else if (*command == "INVITE")
+		returnvalue = invite(client, parsed, server);
+	else if (*command == "TOPIC")
+		returnvalue = topic(client, parsed, server, input);
+	else if (*command == "KICK")
+		returnvalue = kick(client, parsed, server, input);
 	else if (*command == "QUIT")
 		returnvalue = quit(client, server);
 	return (returnvalue);

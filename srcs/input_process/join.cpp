@@ -21,6 +21,13 @@ static std::string clients_string(Channel* channel, std::vector<Client*> clientL
 	return (all_clients);
 }
 
+static void send_channel_topic(Channel* channel, Client* to_send)
+{
+	if (channel->get_topic() == "")
+		return ;
+	send_msg(to_send->get_fd(), ":" + to_send->get_server()->get_config().get_host() + " 332 " + to_send->get_nickname() + " #" + channel->get_name() + " :" + channel->get_topic());
+}
+
 static void send_channel_clientlist(Channel* channel, Client* to_send)
 {
 	std::vector<Client*> clientList = channel->get_clients();
@@ -95,6 +102,7 @@ int join_single_channel(Client* client, std::string channel_name, Server *server
 		case SUCCESS:
 		{
 			send_join(client, server->get_channel(channel_name), channel_name);
+			send_channel_topic(client->get_channel(channel_name), client);
 			send_channel_clientlist(client->get_channel(channel_name), client);
 			return (retvalue);
 		}
