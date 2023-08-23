@@ -2,10 +2,14 @@
 # define CLIENT_HPP
 
 # include <ctime>
+# include <deque>
 # include <iostream>
 # include <string>
 # include <vector>
 // # include "server.hpp"
+
+# define SUCCESS 0
+# define FAILURE 1
 
 enum ClientErrors{
 	FD_IN_USE = 1,
@@ -39,9 +43,10 @@ class Client
 		std::string	_fullRef;
 		//This says if the setup process of their account is complete.
 		bool		_verified;
-		//std::time_t	_lastPong; Reinstate this later
 		Server		*_server;
+		std::time_t	_lastPong;
 		std::vector<Channel*> _channelList;
+		std::deque<std::string> _messageQueue;
 	private:
 		void		set_verified();
 	public:
@@ -60,6 +65,14 @@ class Client
 		std::string	get_fullref() const;
 		bool		get_verified() const;
 		Server*		get_server() const;
+		std::time_t	get_lastPong() const;
+		void		set_lastPong(std::time_t lastPong);
+
+		//Message Queue
+		void		push_message(std::string message);
+		std::string	pop_message();
+		bool		has_messages() const;
+
 
 		//User Actions
 		int			join_channel(std::string channelName, std::string password);

@@ -55,7 +55,7 @@ int			Config::get_timeout() const
 	return (_timeout);
 }
 
-int			Config::get_maxClients() const
+size_t		Config::get_maxClients() const
 {
 	return (_maxClients);
 }

@@ -1,4 +1,6 @@
 #include <iostream>
+#include <chrono>
+#include <ctime>
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -7,7 +9,9 @@
 #include "client.hpp"
 #include "channel.hpp"
 #include "config.hpp"
+#include "input_process.hpp"
 #include "leave.hpp"
+#include "run_server.hpp"
 #include "server.hpp"
 #include "utils.hpp"
 
@@ -45,6 +49,26 @@ std::string	Server::get_pass() const
 int	Server::get_port() const
 {
 	return (_port);
+}
+
+int	Server::get_nfds() const
+{
+	return (_nfds);
+}
+
+void	Server::set_nfds(int nfds)
+{
+	_nfds = nfds;
+}
+
+void	Server::increment_nfds()
+{
+	++_nfds;
+}
+
+void	Server::decrement_nfds()
+{
+	--_nfds;
 }
 //End of Regular Variable Functions
 
@@ -152,37 +176,214 @@ int	Server::remove_channel(std::string channelName)
 	return (SUCCESS);
 }
 
-//END OF CHANNEL MAP FUCNTIONS
+//END OF CHANNEL MAP FUNCTIONS
 
 //Socket Functions
 int	Server::get_socket() const
 {
-	return (_socket);
+	return (_serverSocket);
 }
 
 int	Server::init_socket()
 {
 	// Create a socket
-	_socket = socket(AF_INET, SOCK_STREAM, 0);
-	if (_socket == -1)
+	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (_serverSocket == -1)
 	{
 		std::cerr << "Error creating socket." << std::endl;
 		return (FAILURE);
 	}
 
 	// Set the socket to non-blocking mode
-	fcntl(_socket, F_SETFL, O_NONBLOCK);
+	fcntl(_serverSocket, F_SETFL, O_NONBLOCK);
 
 	// Bind the socket to the designated port
 	_serverAddr.sin_family = AF_INET;
 	_serverAddr.sin_addr.s_addr = INADDR_ANY;
 	_serverAddr.sin_port = htons(_port);
-	if (bind(_socket, (struct sockaddr*)&_serverAddr, sizeof(_serverAddr)) == -1)
+	if (bind(_serverSocket, (struct sockaddr*)&_serverAddr, sizeof(_serverAddr)) == -1)
 	{
 		std::cerr << "Error binding socket to port " << _port << std::endl;
-		close(_socket);
+		close(_serverSocket);
 		return (FAILURE);
 	}
 	return (SUCCESS);
 }
 //End of Socket Functions
+
+//Start of Server Operation Functions
+int Server::start_server()
+{
+	if (init_server() == FAILURE)
+		return (FAILURE);
+	run_server();
+	close_server();
+	return (SUCCESS);
+}
+
+int	Server::init_server()
+{
+	// Create a socket
+	_serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+	if (_serverSocket == -1)
+	{
+		std::cerr << "Error creating socket." << std::endl;
+		return (FAILURE);
+	}
+
+	// Set the socket to non-blocking mode
+	if (fcntl(_serverSocket, F_SETFL, O_NONBLOCK) == -1)
+	{
+		std::cerr << "Error setting socket to non-blocking mode." << std::endl;
+		close(_serverSocket);
+		return (FAILURE);
+	}
+
+	// Bind the socket to the designated port
+	_serverAddr.sin_family = AF_INET;
+	_serverAddr.sin_addr.s_addr = INADDR_ANY;
+	_serverAddr.sin_port = htons(_port);
+	if (bind(_serverSocket, (struct sockaddr*)&_serverAddr, sizeof(_serverAddr)) == -1)
+	{
+		std::cerr << "Error binding socket to port " << _port << std::endl;
+		close(_serverSocket);
+		return (FAILURE);
+	}
+
+	// Listen on the socket
+	if (listen(_serverSocket, 5) == -1)
+	{
+		std::cerr << "Error listening on socket." << std::endl;
+		close(_serverSocket);
+		return (FAILURE);
+	}
+	std::cout << "Server listening on port " << _port << std::endl;
+	pollfd serverPoll;
+	serverPoll.fd = _serverSocket;
+	serverPoll.events = POLLIN | POLLOUT | POLLHUP;
+	_fds.push_back(serverPoll);
+	return (SUCCESS);
+}
+
+void	Server::run_server()
+{
+	while (true)
+	{
+		int ret = poll(_fds.data(), _fds.size(), 1000); // Wait indefinitely
+
+		if (ret == -1)
+		{
+			std::cerr << "Error polling sockets." << std::endl;
+			break;
+		}
+
+		for (size_t i = 0; i < _fds.size(); ++i) {
+			if (_fds[i].revents & POLLIN)
+			{
+				if (i == 0)
+				{
+					// Server socket has incoming connection
+					// Handle the new connection and add the client socket to the vector
+					struct sockaddr_in clientAddr;
+					socklen_t clientAddrSize = sizeof(clientAddr);
+					int clientSocket = accept(_serverSocket, (struct sockaddr*)&clientAddr, &clientAddrSize);
+					if (clientSocket != -1 && _fds.size() < _config.get_maxClients() + 1)
+					{
+						pollfd clientPoll;
+						clientPoll.fd = clientSocket;
+						clientPoll.events = POLLIN | POLLOUT | POLLHUP;
+						_fds.push_back(clientPoll);
+						add_client(clientSocket);
+						std::cout << "New client connected #" << clientSocket << "." << std::endl;
+					}
+					else if (clientSocket != -1)
+					{
+						std::cout << "Maximum number of clients reached." << std::endl;
+						std::string msg = ":" + _config.get_host() + " 999 " + _config.get_serverName() + " :Maximum number of clients reached.\r\n";
+						send(clientSocket, msg.c_str(), msg.length(), 0);
+						close(clientSocket);
+					}
+					else
+					{
+						std::cerr << "Error accepting client connection: " << strerror(errno) << std::endl;
+					}
+				}
+				else
+				{
+					// Client socket has incoming data
+					// Handle the received data
+					char buffer[512];
+					int bytesReceived = recv(_fds[i].fd, buffer, sizeof(buffer), 0);
+					if (bytesReceived > 0)
+					{
+						buffer[bytesReceived] = '\0';
+						input_process(_fds[i].fd, buffer, this);
+					}
+				}
+			}
+
+			if (_fds[i].revents & POLLOUT)
+			{
+				if (i >= 1)
+				{
+					// Client socket is ready for writing
+					// Send data to the client
+					send_all_deques();
+				}
+			}
+
+			if (_fds[i].revents & POLLHUP)
+			{
+				if (i >= 1)
+				{
+					// Client socket has been disconnected
+					// Clean up and remove the socket from the vector
+					std::cout << "Client #" << i << " disconnected." << std::endl;
+					remove_client(_fds[i].fd);
+					close(_fds[i].fd);
+					_fds.erase(_fds.begin() + i);
+				}
+			}
+		}
+	}
+}
+
+void	Server::close_server()
+{
+	// Send messages to all clients that the server is shutting down and then close all client sockets
+	for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
+	{
+		std::string message = (":" + _config.get_serverName() + " QUIT :Server shutting down.\n");
+		send_msg(it->first, message);
+		close(it->first);
+	}
+	// Close the server socket
+	close(_serverSocket);
+}
+//End of Server Operation Functions
+
+int Server::send_msg(int sockfd, std::string msg)
+{
+	Client* client = get_client(sockfd);
+	if (client == nullptr)
+		return (FAILURE);
+	client->push_message(msg);
+	return (SUCCESS);
+}
+
+int Server::send_all_deques()
+{
+	for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
+	{
+		while (it->second.has_messages() == true)
+		{
+			std::string message = it->second.pop_message();
+			if (send(it->first, message.c_str(), message.length(), 0) == -1)
+			{
+				std::cerr << "Error sending message to client " << it->first << std::endl;
+				return (FAILURE);
+			}
+		}
+	}
+	return (SUCCESS);
+}

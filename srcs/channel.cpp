@@ -75,6 +75,11 @@ bool		Channel::get_invite() const
 	return (_invite);
 }
 
+Server*		Channel::get_server() const
+{
+	return (_server);
+}
+
 std::vector<Client*>	Channel::get_clients() const
 {
 	return (_clients);
@@ -279,7 +284,7 @@ bool		Channel::get_limit_enabled() const
 	return (_limitEnabled);
 }
 
-int			Channel::set_limit(int limit, Client* client)
+int			Channel::set_limit(size_t limit, Client* client)
 {
 	if (!(client_is_operator(client->get_nickname())))
 		return (REQUIRED_OPERATOR);
@@ -310,7 +315,7 @@ int			Channel::send_all_message(std::string message)
 {
 	for (std::vector<Client*>::const_iterator to_send = _clients.begin(); to_send != _clients.end(); to_send++)
 	{
-		send_msg((*to_send)->get_fd(), message);
+		_server->send_msg((*to_send)->get_fd(), message);
 	}
 	return (SUCCESS);
 }
