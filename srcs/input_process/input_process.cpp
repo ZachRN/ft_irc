@@ -55,6 +55,8 @@ int	input_process(int fd, char buffer[1024], Server *server)
 		returnvalue = mode(client, parsed, server);
 	else if (*command == "INVITE")
 		returnvalue = invite(client, parsed, server);
+	else if (*command == "TOPIC")
+		returnvalue = topic(client, parsed, server, input);
 	return (returnvalue);
 	// return (0);
 }

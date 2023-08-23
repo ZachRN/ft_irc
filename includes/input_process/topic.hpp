@@ -3,6 +3,6 @@
 
 #include "server.hpp"
 
-int topic(Client* client, std::vector<std::string> parsed_input, Server *server);
+int topic(Client* client, std::vector<std::string> parsed_input, Server *server, std::string unparsed);
 
 #endif
