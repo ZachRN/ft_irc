@@ -3,10 +3,10 @@
 
 int	kick(Client* client, std::vector<std::string> parsed_input, Server *server, std::string unparsed)
 {
-	std::string channelName = (parsed_input.size() > 2) ? (parsed_input.at(1)) : "";
+	std::string channelName = (parsed_input.size() > 2) ? (parsed_input.at(1).substr(1)) : "";
 	if (channelName == "")
 	{
-		send_msg(client->get_fd(), (":" + server->get_config().get_host() + " 461 " + client->get_nickname() + " TOPIC :Not enough parameters\n"));
+		send_msg(client->get_fd(), (":" + server->get_config().get_host() + " 461 " + client->get_nickname() + " KICK :Not enough parameters\n"));
 		return (FAILURE);
 	}
 	Channel* channel = server->get_channel(channelName);
@@ -39,8 +39,9 @@ int	kick(Client* client, std::vector<std::string> parsed_input, Server *server, 
 	}
 	std::string reason = "";
 	if (unparsed.find(":") != std::string::npos)
-		reason = unparsed.substr(unparsed.find(":"));
-	std::string kickMsg = ":" + client->get_nickname() + " #" + channel->get_name() + " " + kickee->get_nickname() + " :" + reason;
+		reason = unparsed.substr(unparsed.find(":") + 1);
+	std::string kickMsg = ":" + client->get_nickname() + " KICK #" + channel->get_name() + " " + kickee->get_nickname() + " :" + reason;
 	channel->send_all_message(kickMsg);
-
+	send_msg(kickee->get_fd(), kickMsg);
+	return (SUCCESS);
 }

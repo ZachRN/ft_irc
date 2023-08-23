@@ -53,6 +53,12 @@ int check_client_sockets(Server *server, int nfds, struct pollfd *fds)
 			if (bytesRead > 0)
 			{
 				buffer[bytesRead] = '\0';
+				for (int i = 0; buffer[i]; i++)
+				{
+					int b = buffer[i];
+					std::cout << b << "|";
+				}
+				std::cout << std::endl;
 				input_process(fds[i].fd, buffer, server);
 				// std::cout << "Received from client " << fds[i].fd << ": " << buffer << std::endl;
 

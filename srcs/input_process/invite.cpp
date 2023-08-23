@@ -6,7 +6,7 @@ int invite(Client* client, std::vector<std::string> parsed_input, Server *server
 	std::string user = (parsed_input.size() > 2) ? (parsed_input.at(1)) : "";
 	if (user == "")
 	{
-		send_msg(client->get_fd(), (":" + server->get_config().get_host() + " 461 " + client->get_nickname() + " MODE :Not enough parameters\n"));
+		send_msg(client->get_fd(), (":" + server->get_config().get_host() + " 461 " + client->get_nickname() + " INVITE :Not enough parameters\n"));
 		return (FAILURE);
 	}
 	std::string channel_name = parsed_input.at(2).substr(1);

@@ -6,7 +6,7 @@ static int invite_mode(Client* client, Channel* channel, std::string mode)
 {
 	int retvalue = 0;
 	std::string message = ":" + client->get_fullref() + " MODE #" + channel->get_name();
-	if (mode == "i")
+	if (mode == "i" || mode == "+i")
 	{
 		if (channel->get_invite() == false)
 		{
@@ -31,7 +31,7 @@ static int topic_mode(Client* client, Channel* channel, std::string mode)
 {
 	int retvalue = 0;
 	std::string message = ":" + client->get_fullref() + " MODE #" + channel->get_name();
-	if (mode == "t")
+	if (mode == "t" || mode == "+t")
 	{
 		if (channel->get_topic_operator() == false)
 		{
@@ -57,7 +57,7 @@ static int password_mode(Client* client, std::vector<std::string> parsed_input, 
 	std::string password = (parsed_input.size() > 3) ? (parsed_input.at(3)) : "";
 	std::string message = ":" + client->get_fullref() + " MODE #" + channel->get_name();
 	int retvalue = 0;
-	if (mode == "k")
+	if (mode == "k" || mode == "+k")
 	{
 		retvalue = channel->set_password(password, client);
 		if (retvalue == SUCCESS)
@@ -84,7 +84,7 @@ static int operator_mode(Client* client, std::vector<std::string> parsed_input, 
 		return (FAILURE);
 	}
 	int retvalue = 0;
-	if (mode == "o")
+	if (mode == "o" || mode == "+o")
 	{
 		retvalue = channel->add_operator(server->get_client(user), client);
 		if (retvalue == SUCCESS)
@@ -124,7 +124,7 @@ static int limit_mode(Client* client, std::vector<std::string> parsed_input, Cha
 		return (FAILURE);
 	}
 	std::string message = ":" + client->get_fullref() + " MODE #" + channel->get_name();
-	if (mode == "l")
+	if (mode == "l" || mode == "+l")
 	{
 		if (channel->set_limit(numLimit, client) == SUCCESS)
 		{
@@ -162,15 +162,15 @@ int mode(Client* client, std::vector<std::string> parsed_input, Server *server)
 		return (NO_CHANNEL_FOUND);
 	}
 	std::string mode = trim_whitespace(parsed_input.at(2));
-	if (mode == "i" || mode == "-i")
+	if (mode == "i" || mode == "-i" || mode == "+i")
 		return (invite_mode(client, channel, mode));
-	if (mode == "t" || mode == "-t")
+	if (mode == "t" || mode == "-t" || mode == "+t")
 		return (topic_mode(client, channel, mode));
-	if (mode == "k" || mode == "-k")
+	if (mode == "k" || mode == "-k" || mode == "+k")
 		return (password_mode(client, parsed_input, channel, mode));
-	if (mode == "o" || mode == "-o")
+	if (mode == "o" || mode == "-o" || mode == "+o")
 		return (operator_mode(client, parsed_input, channel, mode, server));
-	if (mode == "l" || mode == "-l")
+	if (mode == "l" || mode == "-l" || mode == "+o")
 		return (limit_mode(client, parsed_input, channel, mode, server));
 	send_msg(client->get_fd(), (":" + server->get_config().get_host() + " 421 " + mode + " :Unknown Command\n"));
 	return (FAILURE);
