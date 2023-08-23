@@ -57,6 +57,8 @@ int	input_process(int fd, char buffer[1024], Server *server)
 		returnvalue = invite(client, parsed, server);
 	else if (*command == "TOPIC")
 		returnvalue = topic(client, parsed, server, input);
+	else if (*command == "QUIT")
+		returnvalue = quit(client, server);
 	return (returnvalue);
 	// return (0);
 }

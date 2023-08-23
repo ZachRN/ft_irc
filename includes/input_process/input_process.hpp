@@ -11,6 +11,7 @@
 #include "invite.hpp"
 #include "kick.hpp"
 #include "topic.hpp"
+#include "quit.hpp"
 
 int	input_process(int fd, char buffer[1024], Server *server);
 
