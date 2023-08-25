@@ -43,6 +43,7 @@ class Client
 		std::string	_fullRef;
 		//This says if the setup process of their account is complete.
 		bool		_verified;
+		bool		_passCorrect;
 		Server		*_server;
 		std::time_t	_lastPong;
 		std::vector<Channel*> _channelList;
@@ -64,6 +65,8 @@ class Client
 		int			set_username(std::string username);
 		std::string	get_fullref() const;
 		bool		get_verified() const;
+		bool		get_passCorrect() const;
+		int			set_passCorrect(std::string password);
 		Server*		get_server() const;
 		std::time_t	get_lastPong() const;
 		void		set_lastPong(std::time_t lastPong);

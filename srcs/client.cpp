@@ -11,6 +11,7 @@ _server(server)
 	_nickname = "";
 	_username = "";
 	_verified = false;
+	_passCorrect = false;
 	_channelList = std::vector<Channel*>();
 	_lastPong = std::time(nullptr);
 	// std::cout << "bitch" << std::endl;
@@ -104,6 +105,23 @@ bool		Client::get_verified() const
 {
 	return (_verified);
 }
+
+bool		Client::get_passCorrect() const
+{
+	return (_passCorrect);
+}
+
+int			Client::set_passCorrect(std::string password)
+{
+	if (!(password == get_server()->get_pass()))
+	{
+		_passCorrect = false;
+		return (FAILURE);
+	}
+	_passCorrect = true;
+	return (SUCCESS);
+}
+
 
 Server*		Client::get_server() const
 {

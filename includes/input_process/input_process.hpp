@@ -14,6 +14,7 @@
 #include "ping.hpp"
 #include "pong.hpp"
 #include "quit.hpp"
+#include "password.hpp"
 
 int	input_process(int fd, char buffer[1024], Server *server);
 
