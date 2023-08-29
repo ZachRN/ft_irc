@@ -33,6 +33,18 @@ class Server
 		std::map<std::string, Channel>	_channelList;
 		int					_serverSocket;
 		struct sockaddr_in	_serverAddr;
+
+		//Server Operation Functions
+		void	incoming_connection();
+		void	incoming_data(size_t i);
+		void	check_pollin(size_t i);
+		void	check_pollout(size_t i);
+		void	check_pollhup(size_t i);
+		void	check_poll_states();
+		int		init_server();
+		void	run_server();
+		void	close_server();
+		//End of Server Operation Functions
 	public:
 		//Initilization
 		Server(std::string pass, int port);
@@ -80,9 +92,6 @@ class Server
 
 		//Start of Server Operation Functions
 		int		start_server();
-		int		init_server();
-		void	run_server();
-		void	close_server();
 		//End of Server Operation Functions
 
 		int		send_msg(int sockfd, std::string msg);
