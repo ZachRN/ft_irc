@@ -212,13 +212,118 @@ int	Server::init_socket()
 //End of Socket Functions
 
 //Start of Server Operation Functions
-int Server::start_server()
+void	Server::incoming_connection()
 {
-	if (init_server() == FAILURE)
-		return (FAILURE);
-	run_server();
-	close_server();
-	return (SUCCESS);
+	// Server socket has incoming connection
+	// Handle the new connection and add the client socket to the vector
+	struct sockaddr_in clientAddr;
+	socklen_t clientAddrSize = sizeof(clientAddr);
+	int clientSocket = accept(_serverSocket, (struct sockaddr*)&clientAddr, &clientAddrSize);
+	if (clientSocket != -1 && _fds.size() < _config.get_maxClients() + 1)
+	{
+		pollfd clientPoll;
+		clientPoll.fd = clientSocket;
+		clientPoll.events = POLLIN | POLLOUT | POLLHUP;
+		_fds.push_back(clientPoll);
+		add_client(clientSocket);
+		std::cout << "New client connected #" << clientSocket << "." << std::endl;
+	}
+	else if (clientSocket != -1)
+	{
+		std::cout << "Maximum number of clients reached." << std::endl;
+		std::string msg = ":" + _config.get_host() + " 999 " + _config.get_serverName() + " :Maximum number of clients reached.\r\n";
+		send(clientSocket, msg.c_str(), msg.length(), 0);
+		close(clientSocket);
+	}
+	else
+	{
+		std::cerr << "Error accepting client connection: " << strerror(errno) << std::endl;
+	}
+}
+
+void	Server::incoming_data(size_t i)
+{
+	char buffer[512];
+	int bytesReceived = recv(_fds[i].fd, buffer, sizeof(buffer) - 1, 0);
+	if (bytesReceived > 0)
+	{
+		buffer[bytesReceived] = '\0';
+		input_process(_fds[i].fd, buffer, this);
+	}
+}
+
+void	Server::check_pollin(size_t i)
+{
+	if (_fds[i].revents & POLLIN)
+	{
+		if (i == 0)
+			incoming_connection(); // New connection on server socket
+		else
+			incoming_data(i); // Data received on client socket
+	}
+}
+
+void	Server::check_pollout(size_t i)
+{
+	if (_fds[i].revents & POLLOUT)
+	{
+		if (i >= 1)
+			send_all_deques(); // Send all messages in the deque to the client
+	}
+}
+
+void	Server::check_pollhup(size_t i)
+{
+	if (_fds[i].revents & POLLHUP)
+	{
+		if (i >= 1)
+		{
+			// Client socket has been disconnected
+			// Clean up and remove the socket from the vector
+			std::cout << "Client #" << _fds[i].fd << " disconnected." << std::endl;
+			remove_client(_fds[i].fd);
+			close(_fds[i].fd);
+			_fds.erase(_fds.begin() + i);
+		}
+	}
+}
+
+void	Server::check_poll_states()
+{
+	for (size_t i = 0; i < _fds.size(); ++i)
+	{
+		check_pollin(i);
+		check_pollout(i);
+		check_pollhup(i);
+	}
+}
+
+void	Server::run_server()
+{
+	while (true)
+	{
+		int ret = poll(_fds.data(), _fds.size(), 1000); // Wait indefinitely
+
+		if (ret == -1)
+		{
+			std::cerr << "Error polling sockets." << std::endl;
+			break;
+		}
+		check_poll_states();
+	}
+}
+
+void	Server::close_server()
+{
+	// Send messages to all clients that the server is shutting down and then close all client sockets
+	for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
+	{
+		std::string message = (":" + _config.get_serverName() + " QUIT :Server shutting down.\n");
+		send_msg(it->first, message);
+		close(it->first);
+	}
+	// Close the server socket
+	close(_serverSocket);
 }
 
 int	Server::init_server()
@@ -265,100 +370,13 @@ int	Server::init_server()
 	return (SUCCESS);
 }
 
-void	Server::run_server()
+int Server::start_server()
 {
-	while (true)
-	{
-		int ret = poll(_fds.data(), _fds.size(), 1000); // Wait indefinitely
-
-		if (ret == -1)
-		{
-			std::cerr << "Error polling sockets." << std::endl;
-			break;
-		}
-
-		for (size_t i = 0; i < _fds.size(); ++i) {
-			if (_fds[i].revents & POLLIN)
-			{
-				if (i == 0)
-				{
-					// Server socket has incoming connection
-					// Handle the new connection and add the client socket to the vector
-					struct sockaddr_in clientAddr;
-					socklen_t clientAddrSize = sizeof(clientAddr);
-					int clientSocket = accept(_serverSocket, (struct sockaddr*)&clientAddr, &clientAddrSize);
-					if (clientSocket != -1 && _fds.size() < _config.get_maxClients() + 1)
-					{
-						pollfd clientPoll;
-						clientPoll.fd = clientSocket;
-						clientPoll.events = POLLIN | POLLOUT | POLLHUP;
-						_fds.push_back(clientPoll);
-						add_client(clientSocket);
-						std::cout << "New client connected #" << clientSocket << "." << std::endl;
-					}
-					else if (clientSocket != -1)
-					{
-						std::cout << "Maximum number of clients reached." << std::endl;
-						std::string msg = ":" + _config.get_host() + " 999 " + _config.get_serverName() + " :Maximum number of clients reached.\r\n";
-						send(clientSocket, msg.c_str(), msg.length(), 0);
-						close(clientSocket);
-					}
-					else
-					{
-						std::cerr << "Error accepting client connection: " << strerror(errno) << std::endl;
-					}
-				}
-				else
-				{
-					// Client socket has incoming data
-					// Handle the received data
-					char buffer[512];
-					int bytesReceived = recv(_fds[i].fd, buffer, sizeof(buffer), 0);
-					if (bytesReceived > 0)
-					{
-						buffer[bytesReceived] = '\0';
-						input_process(_fds[i].fd, buffer, this);
-					}
-				}
-			}
-
-			if (_fds[i].revents & POLLOUT)
-			{
-				if (i >= 1)
-				{
-					// Client socket is ready for writing
-					// Send data to the client
-					send_all_deques();
-				}
-			}
-
-			if (_fds[i].revents & POLLHUP)
-			{
-				if (i >= 1)
-				{
-					// Client socket has been disconnected
-					// Clean up and remove the socket from the vector
-					std::cout << "Client #" << _fds[i].fd << " disconnected." << std::endl;
-					remove_client(_fds[i].fd);
-					close(_fds[i].fd);
-					_fds.erase(_fds.begin() + i);
-				}
-			}
-		}
-	}
-}
-
-void	Server::close_server()
-{
-	// Send messages to all clients that the server is shutting down and then close all client sockets
-	for (std::map<int, Client>::iterator it = _clientList.begin(); it != _clientList.end(); ++it)
-	{
-		std::string message = (":" + _config.get_serverName() + " QUIT :Server shutting down.\n");
-		send_msg(it->first, message);
-		close(it->first);
-	}
-	// Close the server socket
-	close(_serverSocket);
+	if (init_server() == FAILURE)
+		return (FAILURE);
+	run_server();
+	close_server();
+	return (SUCCESS);
 }
 //End of Server Operation Functions
 

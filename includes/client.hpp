@@ -48,6 +48,7 @@ class Client
 		std::time_t	_lastPong;
 		std::vector<Channel*> _channelList;
 		std::deque<std::string> _messageQueue;
+		std::string	_bufferedInput;
 	private:
 		void		set_verified();
 	public:
@@ -76,6 +77,9 @@ class Client
 		std::string	pop_message();
 		bool		has_messages() const;
 
+		//Buffered Input
+		void		add_bufferedInput(std::string input);
+		std::string	get_bufferedInput();
 
 		//User Actions
 		int			join_channel(std::string channelName, std::string password);

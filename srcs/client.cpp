@@ -155,6 +155,18 @@ bool		Client::has_messages() const
 	return (_messageQueue.size() > 0);
 }
 
+void		Client::add_bufferedInput(std::string input)
+{
+	_bufferedInput += input;
+}
+
+std::string	Client::get_bufferedInput()
+{
+	std::string input = _bufferedInput;
+	_bufferedInput.clear();
+	return (input);
+}
+
 static int	can_join_channel(Channel* channel, std::string password, std::string nickname)
 {
 	if (channel->get_password() != password)
