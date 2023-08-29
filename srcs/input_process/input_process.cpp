@@ -39,12 +39,20 @@ int	input_process(int fd, char buffer[1024], Server *server)
 	std::cout << input << std::endl;
 	if (parsed.size() < 2)
 		return (FAILURE);
+	
+	//NEED TO SET PASSWORD BEFORE BEING ALLOWED TO CONTINUE
+	if (*command == "PASS")
+		returnvalue = password(client, parsed);
+	if (!client->get_passCorrect())
+		return (FAILURE);
+	//NICK AND USER MUST BE SET BEFORE BEING ALLOWD TO USE
 	if (*command == "NICK")
 		returnvalue = nickname(client, parsed, server);
 	else if (*command == "USER")
 		returnvalue = username(client, parsed);
 	if (client->get_verified() == false)
 		return (FAILURE);
+	//POST BEING VERIFIED AND PASSWORD ENABLED YOU ARE ABLE TO USE ALL MESSAGES
 	if (*command == "JOIN")
 		returnvalue = join(client, parsed, server);
 	else if (*command == "PART")
