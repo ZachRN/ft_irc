@@ -172,6 +172,8 @@ int mode(Client* client, std::vector<std::string> parsed_input, Server *server)
 		return (operator_mode(client, parsed_input, channel, mode, server));
 	if (mode == "l" || mode == "-l" || mode == "+o")
 		return (limit_mode(client, parsed_input, channel, mode, server));
+	if (mode == "+sn")
+		return (FAILURE);
 	server->send_msg(client->get_fd(), (":" + server->get_config().get_host() + " 421 " + mode + " :Unknown Command\n"));
 	return (FAILURE);
 }
