@@ -247,8 +247,28 @@ void	Server::incoming_data(size_t i)
 	int bytesReceived = recv(_fds[i].fd, buffer, sizeof(buffer) - 1, 0);
 	if (bytesReceived > 0)
 	{
+		bool completeLastMessage = false;
 		buffer[bytesReceived] = '\0';
-		input_process(_fds[i].fd, buffer, this);
+		if (bytesReceived >= 2 && buffer[bytesReceived - 2] == '\r' && buffer[bytesReceived - 1] == '\n')
+			completeLastMessage = true;
+		std::vector<std::string> messages = split(buffer, "\r\n");
+		if (completeLastMessage)
+			messages.back() = get_client(_fds[i].fd)->get_bufferedInput() + messages.back();
+		for (std::vector<std::string>::iterator it = messages.begin(); it != messages.end(); ++it)
+		{
+			std::string msg = *it;
+			if ((msg.length() > 0 && completeLastMessage) || (msg.length() > 0 && !completeLastMessage && (it != messages.end() - 1))) // Ignores the last message if it is partial
+			{
+				std::cout << "Received message from client #" << _fds[i].fd << ": " << msg << std::endl;
+				input_process(_fds[i].fd, &msg[0], this);
+			}
+		}
+		if (completeLastMessage == false)
+		{
+			std::cout << "Received partial message from client #" << _fds[i].fd << ": " << buffer << std::endl;
+			// Buffer the message until the rest of it is received
+			get_client(_fds[i].fd)->add_bufferedInput(buffer);
+		}
 	}
 }
 
