@@ -8,7 +8,7 @@ static void send_channel_msg(Client* client, std::vector<std::string> parsed_inp
 	size_t	colon_pos = unparsed.find_first_of(":");
 	std::string msg = "";
 	if (colon_pos != std::string::npos)
-		msg = unparsed.substr(colon_pos + 1) + "\n";
+		msg = unparsed.substr(colon_pos + 1);
 	else
 		msg = parsed_input.at(2);
 	std::string the_message = ":" + client->get_fullref() + " PRIVMSG " + "#" + channel->get_name() + " :" + msg + "\n";
