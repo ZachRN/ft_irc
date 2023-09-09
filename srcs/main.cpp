@@ -27,7 +27,7 @@ static int server_port(std::string port)
 		std::cout << "Port was not a valid integer." << std::endl;
 		exit(FAILURE);
 	}
-	if (numPort < 0 || numPort > 65535)
+	if (numPort < 1 || numPort > 65535)
 	{
 		std::cout << "The port must range from 0 to 65535" << std::endl;
 		exit(FAILURE);

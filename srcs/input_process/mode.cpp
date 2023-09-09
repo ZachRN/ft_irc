@@ -83,6 +83,11 @@ static int operator_mode(Client* client, std::vector<std::string> parsed_input, 
 		server->send_msg(client->get_fd(), (":" + server->get_config().get_host() + " 461 " + client->get_nickname() + " MODE :Not enough parameters\n"));
 		return (FAILURE);
 	}
+	if (server->get_client(user) == nullptr)
+	{
+		server->send_msg(client->get_fd(),(":" + server->get_config().get_host() + " 401 " + client->get_nickname() + " " + user + " :No such nick/channel\n"));
+		return (FAILURE);
+	}
 	int retvalue = 0;
 	if (mode == "o" || mode == "+o")
 	{
@@ -96,14 +101,12 @@ static int operator_mode(Client* client, std::vector<std::string> parsed_input, 
 		if (retvalue == SUCCESS)
 			channel->send_all_message((message + " -o " + server->get_client(user)->get_nickname() + "\n"));
 	}
-	if (retvalue == NO_CLIENT_FOUND)
-		server->send_msg(client->get_fd(),(":" + server->get_config().get_host() + " 401 " + client->get_nickname() + " " + user + " :No such nick/channel\n"));
 	return (SUCCESS);
 }
 
 static int limit_mode(Client* client, std::vector<std::string> parsed_input, Channel* channel, std::string mode, Server* server)
 {
-	std::string limit = (parsed_input.size() > 3) ? (parsed_input.at(3)) : "0";
+	std::string limit = (parsed_input.size() > 3) ? (parsed_input.at(3)) : "1";
 	if (limit.size() > 4)
 	{
 		server->send_msg(client->get_fd(), ":" +server->get_config().get_serverName()+ " 400 " + client->get_nickname() + " :Unknown Set limit over the config limit.\n");
@@ -118,9 +121,9 @@ static int limit_mode(Client* client, std::vector<std::string> parsed_input, Cha
 	try{numLimit = std::stoi(limit);}
 	catch (...){numLimit = -1;}
 	//MAYBE > INSTEAD OF >=
-	if (numLimit >= static_cast<int>(server->get_config().get_maxClients()) || numLimit < 0)
+	if (numLimit >= static_cast<int>(server->get_config().get_maxClients()) || numLimit < 1)
 	{
-		server->send_msg(client->get_fd(), ":" + server->get_config().get_serverName()+ " 400 " + client->get_nickname() + " :Unknown Set limit over the config limit.\n");
+		server->send_msg(client->get_fd(), ":" + server->get_config().get_serverName()+ " 400 " + client->get_nickname() + " :Unknown Set limit over the config limit or under 1.\n");
 		return (FAILURE);
 	}
 	std::string message = ":" + client->get_fullref() + " MODE #" + channel->get_name();
@@ -170,7 +173,7 @@ int mode(Client* client, std::vector<std::string> parsed_input, Server *server)
 		return (password_mode(client, parsed_input, channel, mode));
 	if (mode == "o" || mode == "-o" || mode == "+o")
 		return (operator_mode(client, parsed_input, channel, mode, server));
-	if (mode == "l" || mode == "-l" || mode == "+o")
+	if (mode == "l" || mode == "-l" || mode == "+l")
 		return (limit_mode(client, parsed_input, channel, mode, server));
 	if (mode == "+sn")
 		return (FAILURE);
