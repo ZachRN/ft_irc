@@ -25,6 +25,9 @@ int leave(Client* client, std::vector<std::string> parsed_input, Server *server)
 	if (client->leave_channel(channel_name) != SUCCESS)
 		return (FAILURE);
 	channel = server->get_channel(channel_name);
+	if (channel == nullptr)
+		return (SUCCESS);
+	channel = server->get_channel(channel_name);
 	send_leave(client, channel, (*(++(parsed_input.begin()))));
 	return (SUCCESS);
 }

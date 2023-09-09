@@ -113,6 +113,8 @@ bool		Client::get_passCorrect() const
 
 int			Client::set_passCorrect(std::string password)
 {
+	if (get_verified() == true)
+		return (SUCCESS);
 	if (!(password == get_server()->get_pass()))
 	{
 		_passCorrect = false;
@@ -169,6 +171,8 @@ std::string	Client::get_bufferedInput()
 
 static int	can_join_channel(Channel* channel, std::string password, std::string nickname)
 {
+	if (channel == nullptr)
+		return (FAILURE);
 	if (channel->get_password() != password)
 		return (PASSWORD_INVALID);
 	if (channel->get_clients().size() >= channel->get_limit() && channel->get_limit() != 0)

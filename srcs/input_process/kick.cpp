@@ -40,6 +40,8 @@ int	kick(Client* client, std::vector<std::string> parsed_input, Server *server, 
 	std::string reason = "";
 	if (unparsed.find(":") != std::string::npos)
 		reason = unparsed.substr(unparsed.find(":") + 1);
+	if (reason[reason.size() - 1] != '\n')
+		reason += "\n";
 	std::string kickMsg = ":" + client->get_nickname() + " KICK #" + channel->get_name() + " " + kickee->get_nickname() + " :" + reason;
 	channel->send_all_message(kickMsg);
 	server->send_msg(kickee->get_fd(), kickMsg);
