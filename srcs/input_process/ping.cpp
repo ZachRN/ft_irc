@@ -1,6 +1,6 @@
 #include <iostream>
 #include "client.hpp"
-#include "run_server.hpp"
+
 #include "server.hpp"
 
 int ping(Client* client, std::vector<std::string> parsed_input, Server *server, std::string unparsed)

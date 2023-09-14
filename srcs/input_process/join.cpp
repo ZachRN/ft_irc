@@ -1,7 +1,7 @@
 #include <map>
 #include <vector>
 #include "server.hpp"
-#include "run_server.hpp"
+
 #include "utils.hpp"
 
 static std::string clients_string(Channel* channel, std::vector<Client*> clientList)
