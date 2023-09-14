@@ -21,6 +21,25 @@ static void send_channel_msg(Client* client, std::vector<std::string> parsed_inp
 	}
 }
 
+static int	send_private_message(Client* client, std::string name, Server *server, std::vector<std::string> parsed_input, std::string unparsed)
+{
+	Client* to_send = server->get_client(name);
+	if (to_send == nullptr)
+	{
+		server->send_msg(client->get_fd(),(":" + server->get_config().get_host() + " 401 " + client->get_nickname() + " " + parsed_input.at(2) + " :No such nick/channel\n"));
+		return (FAILURE);
+	}
+	size_t	colon_pos = unparsed.find_first_of(":");
+	std::string msg = "";
+	if (colon_pos != std::string::npos)
+		msg = unparsed.substr(colon_pos + 1);
+	else
+		msg = parsed_input.at(2);
+	std::string the_message = ":" + client->get_fullref() + " PRIVMSG " + to_send->get_nickname() + " :" + msg + "\n";
+	server->send_msg(to_send->get_fd(), the_message);
+	return (SUCCESS);
+}
+
 int privmsg(Client* client, std::vector<std::string> parsed_input, Server *server, std::string unparsed)
 {
 	if (parsed_input.size() < 3)
@@ -28,9 +47,11 @@ int privmsg(Client* client, std::vector<std::string> parsed_input, Server *serve
 		server->send_msg(client->get_fd(), (":" + server->get_config().get_host() + " 461 " + client->get_nickname() + " INVITE :Not enough parameters\n"));
 		return (FAILURE);
 	}
+	unparsed = trim_whitespace(unparsed);
+	if ((*(++(parsed_input.begin()))).at(0) != '#')
+		return (send_private_message(client, (*(++(parsed_input.begin()))), server, parsed_input, unparsed));
 	std::string channel_name = (*(++(parsed_input.begin()))).substr(1);
 	Channel*	channel = server->get_channel(channel_name);
-	unparsed = trim_whitespace(unparsed);
 	if (channel == nullptr)
 	{
 		server->send_msg(client->get_fd(),(":" + server->get_config().get_host() + " 403 " + client->get_nickname() + " #" + channel_name + " :No such channel\n"));
