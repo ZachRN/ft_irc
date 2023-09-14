@@ -2,7 +2,7 @@
 #include "server.hpp"
 #include "channel.hpp"
 #include "utils.hpp"
-#include "run_server.hpp"
+
 //See Notes in Client.hpp for more information on commented out info.
 Client::Client(int fd, Server* server) :
 _server(server)
